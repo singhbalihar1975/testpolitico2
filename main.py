@@ -1,88 +1,55 @@
 import streamlit as st
 import base64
 
-# 1. Configuración de página y Estética Avanzada
-st.set_page_config(page_title="Brújula Política v3.0", layout="centered")
+# 1. Configuración de página y Estética Premium
+st.set_page_config(page_title="Brújula Política Avanzada", layout="centered")
 
 st.markdown("""
     <style>
     .stApp { background-color: #e3f2fd; }
-    
-    /* Centrado total de la App */
     .main .block-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding-top: 2rem;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
-
-    /* Botones idénticos y elegantes */
+    /* Botones de respuesta con diseño uniforme */
     div.stButton > button {
-        width: 100% !important;
-        max-width: 500px;
-        margin: 8px auto !important;
-        border-radius: 15px;
-        height: 4em;
-        font-weight: bold;
-        font-size: 16px;
-        background-color: white;
-        border: 2px solid #1565c0;
-        color: #1565c0;
-        box-shadow: 0px 4px 6px rgba(0,0,0,0.05);
+        width: 100% !important; max-width: 550px; margin: 8px auto !important;
+        border-radius: 12px; height: 3.8em; font-weight: bold; font-size: 16px;
+        background-color: white; border: 2px solid #1565c0; color: #1565c0;
+        transition: all 0.2s ease-in-out;
     }
-    
     div.stButton > button:hover {
-        background-color: #e1f5fe;
-        border-color: #0d47a1;
-        transform: scale(1.01);
+        background-color: #0d47a1; color: white; transform: translateY(-2px);
+        box-shadow: 0px 5px 15px rgba(13, 71, 161, 0.3);
     }
-
-    /* Caja de Ideología */
-    .ideologia-box {
-        background-color: #90caf9;
-        color: #0d47a1;
-        padding: 30px;
-        border-radius: 20px;
-        text-align: center;
-        border: 2px solid #1565c0;
-        margin-bottom: 20px;
-        width: 100%;
-        max-width: 600px;
+    /* Caja de resultados con azul profundo */
+    .result-card {
+        background-color: #90caf9; color: #0d47a1; padding: 25px;
+        border-radius: 20px; text-align: center; border: 2px solid #1565c0;
+        margin-bottom: 25px; width: 100%; max-width: 650px;
     }
-
-    /* Mapa de resultados */
-    .map-wrapper {
-        position: relative;
-        width: 450px;
-        height: 450px;
-        margin: 20px auto;
-        border: 5px solid white;
-        border-radius: 15px;
-        box-shadow: 0px 10px 20px rgba(0,0,0,0.1);
-        background-color: white;
+    /* Mapa con punto rojo */
+    .map-container {
+        position: relative; width: 450px; height: 450px; margin: 20px auto;
+        border: 4px solid #1565c0; border-radius: 10px; background-color: white;
     }
-    .chart-img { width: 100%; height: 100%; border-radius: 10px; }
+    .chart-img { width: 100%; height: 100%; border-radius: 5px; }
     .red-dot {
-        position: absolute;
-        width: 20px;
-        height: 20px;
-        background-color: #ff0000;
-        border-radius: 50%;
-        border: 3px solid white;
-        transform: translate(-50%, -50%);
-        z-index: 100;
-        box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
+        position: absolute; width: 22px; height: 22px; background-color: #ff0000;
+        border-radius: 50%; border: 3px solid white; transform: translate(-50%, -50%);
+        z-index: 100; box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
     }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. Inicialización de estado
+# 2. Lógica de Puntuación Radicalizada
+# Aumentamos el impacto para alejar el punto del centro más fácilmente
+MULTIPLIER = 1.5 
+
 if 'idx' not in st.session_state:
     st.session_state.idx, st.session_state.x, st.session_state.y = 0, 0.0, 0.0
     st.session_state.history = []
 
-# 3. El Banco de 85 Preguntas
+# 3. Preguntas (85)
 questions = [
     {"t": "1. El mercado libre beneficia a todos a largo plazo.", "a": "x", "v": 1},
     {"t": "2. La sanidad debe ser 100% pública y gratuita.", "a": "x", "v": -1},
@@ -150,7 +117,7 @@ questions = [
     {"t": "64. La piratería digital no es un crimen real.", "a": "y", "v": -1},
     {"t": "65. La disciplina escolar debe ser estricta.", "a": "y", "v": 1},
     {"t": "66. La IA debe ser regulada por el estado.", "a": "y", "v": 1},
-    {"t": "67. La energía nuclear es una solución necesaria.", "a": "x", "v": 1},
+    {"t": "67. La energía nuclear es necesaria.", "a": "x", "v": 1},
     {"t": "68. Los animales deben tener derechos legales.", "a": "y", "v": -1},
     {"t": "69. El espacio debe ser colonizado por privados.", "a": "x", "v": 1},
     {"t": "70. La libertad de expresión incluye ofender.", "a": "y", "v": -1},
@@ -160,88 +127,88 @@ questions = [
     {"t": "74. Votar directamente todas las leyes.", "a": "y", "v": -1},
     {"t": "75. Prisiones para rehabilitación.", "a": "y", "v": -1},
     {"t": "76. La riqueza es esfuerzo personal.", "a": "x", "v": 1},
-    {"t": "77. Internet debe ser un derecho público.", "a": "x", "v": -1},
+    {"t": "77. Internet es un derecho público.", "a": "x", "v": -1},
     {"t": "78. Religión en escuelas públicas.", "a": "y", "v": 1},
     {"t": "79. Intervención militar por DD.HH.", "a": "y", "v": 1},
     {"t": "80. Criptomonedas vs Moneda estatal.", "a": "x", "v": 1},
     {"t": "81. La meritocracia justifica salarios.", "a": "x", "v": 1},
     {"t": "82. El estado debe prohibir comida basura.", "a": "y", "v": 1},
-    {"t": "83. La diversidad es nuestra mayor fuerza.", "a": "y", "v": -1},
-    {"t": "84. Las huelgas dañan más de lo que ayudan.", "a": "x", "v": 1},
+    {"t": "83. La diversidad es nuestra fuerza.", "a": "y", "v": -1},
+    {"t": "84. Las huelgas dañan la economía.", "a": "x", "v": 1},
     {"t": "85. La tecnología nos hace menos libres.", "a": "y", "v": 1}
 ]
 
+def get_ideology_details(x, y):
+    # Lógica de 15 ideologías refinada
+    if x > 40 and y > 40: return "Fascismo Clásico", "Defiendes un Estado totalitario, nacionalismo extremo y control social estricto con economía corporativista."
+    if x > 40 and y < -40: return "Anarcocapitalismo (Soberanía Individual)", "Crees que el Estado es un robo y que todas las interacciones deben ser voluntarias y privadas."
+    if x < -40 and y > 40: return "Marxismo-Leninismo", "Apoyas la abolición de la propiedad privada mediante un Estado fuerte que dirija la sociedad hacia el comunismo."
+    if x < -40 and y < -40: return "Anarcocomunismo", "Buscas la disolución de toda jerarquía y Estado, organizando la vida en comunas autogestionadas e iguales."
+    if x > 40 and abs(y) <= 20: return "Paleolibertarismo / Minarquismo", "Deseas un Estado mínimo limitado a la policía y justicia, con un mercado totalmente desregulado."
+    if x < -40 and abs(y) <= 20: return "Socialismo Democrático Radical", "Propones una transformación profunda de la economía hacia la propiedad pública bajo control democrático."
+    if abs(x) <= 15 and y > 40: return "Teocracia / Tradicionalismo Radical", "Crees que las leyes deben basarse estrictamente en la fe o en tradiciones ancestrales inamovibles."
+    if abs(x) <= 15 and y < -40: return "Progresismo Radical / Nihilismo Político", "Priorizas la ruptura total con cualquier norma social tradicional y la libertad personal absoluta."
+    if x > 15 and y > 15: return "Conservadurismo Liberal", "Derecha clásica que combina valores tradicionales con el libre mercado."
+    if x < -15 and y > 15: return "Socialdemocracia", "Buscas equilibrar el capitalismo con un fuerte Estado de bienestar y regulación social."
+    if x > 15 and y < -15: return "Libertarismo de Derecha", "Defiendes la libertad de mercado y una gran autonomía individual frente al Estado."
+    if x < -15 and y < -15: return "Libertarismo de Izquierda / Mutualismo", "Combinas la libertad individual con una economía basada en la cooperación y el rechazo al gran capital."
+    if abs(x) <= 15 and y > 15: return "Democracia Cristiana / Solidarismo", "Centro-derecha que enfatiza la justicia social dentro de un marco moral tradicional."
+    if abs(x) <= 15 and y < -15: return "Socialismo Liberal / Progresismo", "Centro-izquierda enfocado en derechos civiles y reformas sociales constantes."
+    return "Centrismo Pragmático", "Evitas los dogmas. Crees en un equilibrio moderado entre libertad, orden y justicia social."
+
 def responder(m):
     q = questions[st.session_state.idx]
-    p = m * q["v"]
+    # Aplicamos el MULTIPLIER para radicalizar el movimiento
+    p = m * q["v"] * MULTIPLIER
     st.session_state.history.append((p if q["a"]=="x" else 0, p if q["a"]=="y" else 0))
     if q["a"]=="x": st.session_state.x += p
     else: st.session_state.y += p
     st.session_state.idx += 1
 
-def get_full_analysis(x, y):
-    if x > 30 and y > 30: 
-        return "Autoritarismo Nacional", "Priorizas el orden estatal y la jerarquía económica. Crees en una nación fuerte y un mercado regulado por el interés nacional."
-    if x > 30 and y < -30: 
-        return "Anarcocapitalismo", "Abogas por la libertad individual extrema y la eliminación del Estado en favor del mercado libre absoluto."
-    if x < -30 and y > 30: 
-        return "Socialismo de Estado", "Crees en el control estatal de los medios de producción y una fuerte autoridad para garantizar la igualdad social."
-    if x < -30 and y < -30: 
-        return "Anarcomunismo", "Buscas una sociedad sin clases ni Estado, basada en la cooperación voluntaria y la propiedad colectiva."
-    if abs(x) <= 20 and abs(y) <= 20: 
-        return "Centrismo Moderado", "Tus posiciones son equilibradas. Prefieres cambios graduales y soluciones pragmáticas que no se van a los extremos."
-    if x > 30: return "Derecha Conservadora", "Valoras las libertades de mercado y la tradición, con un Estado que protege la propiedad."
-    if x < -30: return "Socialdemocracia Progresista", "Apoyas un sistema redistributivo fuerte dentro de un marco democrático y libertades civiles."
-    if y > 30: return "Conservadurismo Social", "Crees que el Estado debe proteger los valores morales y la cohesión social tradicional."
-    if y < -30: return "Libertarismo Civil", "Tu prioridad es que el Estado no se meta en la vida privada de las personas, independientemente de la economía."
-    return "Tendencia Mixta", "Tus opiniones combinan elementos de varios cuadrantes de forma ecléctica."
-
-# --- INTERFAZ ---
+# --- LÓGICA DE PANTALLAS ---
 if st.session_state.idx >= len(questions):
-    st.markdown("<h1>📊 Tu Perfil Político</h1>", unsafe_allow_html=True)
+    st.markdown("<h1>📊 Tu Diagnóstico Político</h1>", unsafe_allow_html=True)
     
-    nombre_id, desc_id = get_full_analysis(st.session_state.x, st.session_state.y)
+    nombre, desc = get_ideology_details(st.session_state.x, st.session_state.y)
     
     st.markdown(f"""
-        <div class='ideologia-box'>
-            <h2 style='margin:0;'>{nombre_id}</h2>
-            <hr style='border: 1px solid #1565c0;'>
-            <p style='font-size: 18px;'>{desc_id}</p>
+        <div class="result-card">
+            <h2 style='margin:0;'>{nombre}</h2>
+            <p style='font-size: 1.1em; margin-top:10px;'>{desc}</p>
         </div>
     """, unsafe_allow_html=True)
 
-    # Cálculo visual (Rango máximo aprox +/- 170. Factor 0.25 para el mapa de 450px)
-    left_p = 50 + (st.session_state.x * 0.28) 
-    top_p = 50 - (st.session_state.y * 0.28)
+    # Punto Rojo (Factor de escala ajustado para 85 preg con multiplier)
+    # Rango máximo teórico es +/- 255. Escalamos al mapa de 450px.
+    left_p = 50 + (st.session_state.x * 0.18) 
+    top_p = 50 - (st.session_state.y * 0.18)
 
     def get_base64_img(file):
-        with open(file, "rb") as f:
-            return base64.b64encode(f.read()).decode()
+        with open(file, "rb") as f: return base64.b64encode(f.read()).decode()
 
     try:
         bin_str = get_base64_img("chart.png")
         st.markdown(f"""
-            <div class="map-wrapper">
+            <div class="map-container">
                 <img src="data:image/png;base64,{bin_str}" class="chart-img">
                 <div class="red-dot" style="left: {left_p}%; top: {top_p}%;"></div>
             </div>
         """, unsafe_allow_html=True)
     except:
-        st.error("Error al cargar la imagen. Sube chart.png a GitHub.")
+        st.error("Sube 'chart.png' a tu repositorio de GitHub para ver el mapa.")
 
-    st.write("")
-    if st.button("🔄 Volver a realizar el test"):
+    st.info(f"Puntuación Económica (X): {round(st.session_state.x, 1)} | Puntuación Social (Y): {round(st.session_state.y, 1)}")
+    
+    if st.button("🔄 Reiniciar Test"):
         st.session_state.idx, st.session_state.x, st.session_state.y = 0, 0.0, 0.0
         st.session_state.history = []
         st.rerun()
 
 else:
-    st.markdown(f"<p style='color: #546e7a;'>Pregunta {st.session_state.idx + 1} de {len(questions)}</p>", unsafe_allow_html=True)
     st.progress(st.session_state.idx / len(questions))
+    st.markdown(f"<h2 style='text-align: center; color: #1565c0; padding: 20px;'>{questions[st.session_state.idx]['t']}</h2>", unsafe_allow_html=True)
     
-    st.markdown(f"<h2 style='color: #1565c0; padding: 20px;'>{questions[st.session_state.idx]['t']}</h2>", unsafe_allow_html=True)
-    
-    # Botones centrados
+    # Botones con emojis y centrados
     if st.button("✨ Totalmente de acuerdo"): responder(2); st.rerun()
     if st.button("👍 De acuerdo"): responder(1); st.rerun()
     if st.button("⚪ Neutral / No sé"): responder(0); st.rerun()
@@ -249,8 +216,7 @@ else:
     if st.button("🔥 Totalmente en desacuerdo"): responder(-2); st.rerun()
     
     if st.session_state.idx > 0:
-        st.write("")
-        if st.button("⬅️ Pregunta anterior"):
+        if st.button("⬅️ Anterior"):
             st.session_state.idx -= 1
             px, py = st.session_state.history.pop()
             st.session_state.x -= px; st.session_state.y -= py
