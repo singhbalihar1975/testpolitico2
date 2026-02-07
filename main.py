@@ -1,252 +1,248 @@
 import streamlit as st
 import base64
 
-# 1. Configuración de página y Estética Radical
-st.set_page_config(page_title="Brújula Política: Edición Radical", layout="centered")
+# 1. ESTÉTICA RADICAL Y BURBUJAS CENTRADAS
+st.set_page_config(page_title="Brújula Política: Edición Extrema", layout="centered")
 
 st.markdown("""
     <style>
-    .stApp { background-color: #f8f9fa; }
+    .stApp { background-color: #0e1117; color: #ffffff; }
     
-    /* Botones idénticos y grandes */
+    /* Burbujas de respuesta: Centradas y Alargadas */
     div.stButton > button {
-        width: 100% !important; max-width: 550px; margin: 10px auto !important;
-        border-radius: 12px; height: 3.8em; font-weight: bold; font-size: 16px;
-        background-color: white; border: 2px solid #0d47a1; color: #0d47a1;
-        transition: 0.2s;
+        width: 100% !important;
+        max-width: 650px; 
+        margin: 10px auto !important;
+        display: block;
+        border-radius: 40px;
+        height: 3.8em;
+        font-weight: bold;
+        font-size: 17px;
+        background-color: #1f2937;
+        border: 2px solid #3b82f6;
+        color: white;
+        transition: all 0.25s ease;
     }
-    div.stButton > button:hover { background-color: #0d47a1; color: white; transform: scale(1.02); }
+    div.stButton > button:hover {
+        background-color: #3b82f6;
+        border-color: #ffffff;
+        transform: scale(1.02);
+        box-shadow: 0px 0px 20px rgba(59, 130, 246, 0.4);
+    }
 
-    /* Caja de Resultados */
-    .result-header {
-        background-color: #0d47a1; color: white; padding: 20px;
-        border-radius: 15px 15px 0 0; text-align: center; margin-top: 20px;
-    }
-    .result-body {
-        background-color: #e3f2fd; color: #0d47a1; padding: 20px;
-        border-radius: 0 0 15px 15px; text-align: center; border: 2px solid #0d47a1;
-        margin-bottom: 25px; font-weight: 500; line-height: 1.5;
-    }
-
-    /* MAPA Y POSICIONAMIENTO */
+    /* Mapa y Marcadores */
     .map-container {
-        position: relative; width: 450px; height: 450px; 
-        margin: 30px auto; border: 5px solid #0d47a1; border-radius: 10px;
-        background-color: white; overflow: hidden;
+        position: relative; 
+        width: 480px; height: 480px; 
+        margin: 30px auto; 
+        border: 4px solid #3b82f6; 
+        background-color: white;
+        border-radius: 8px;
+        overflow: hidden;
     }
     .chart-img { width: 100%; height: 100%; display: block; }
     
-    .dot {
-        position: absolute; border-radius: 50%; border: 2px solid white;
-        transform: translate(-50%, -50%); z-index: 10;
+    .marker {
+        position: absolute; transform: translate(-50%, -50%);
+        border-radius: 50%; border: 1px solid white;
+    }
+    .user-marker {
+        width: 30px; height: 30px; background: #ff0000; z-index: 100;
+        box-shadow: 0 0 15px #ff0000; color: white; 
         display: flex; align-items: center; justify-content: center;
+        font-size: 10px; font-weight: bold;
     }
-    
-    .user-dot {
-        width: 28px; height: 28px; background-color: #ff0000;
-        z-index: 100; box-shadow: 0 0 15px rgba(255,0,0,0.8);
-        border: 3px solid white; color: white; font-size: 10px; font-weight: bold;
-    }
-
-    .leader-dot { width: 14px; height: 14px; }
+    .leader-marker { width: 12px; height: 12px; z-index: 50; }
 
     @media print {
-        .stButton, .stProgress, header, footer { display: none !important; }
+        .stButton, .stProgress, header, footer, .stMetric { display: none !important; }
         .map-container { border: 2px solid black !important; margin: 0 auto; }
+        .stApp { background-color: white !important; color: black !important; }
     }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. Motor de Radicalización y Estado
+# 2. MOTOR DE RADICALIZACIÓN
 if 'idx' not in st.session_state:
-    st.session_state.idx, st.session_state.x, st.session_state.y = 0, 0.0, 0.0
-    st.session_state.eco, st.session_state.glob = 0.0, 0.0
-    st.session_state.history = []
+    st.session_state.update({'idx': 0, 'x': 0.0, 'y': 0.0, 'eco': 0.0, 'glob': 0.0, 'hist': []})
 
-def get_radical_points(val):
-    # Multiplica por 3 si es "Totalmente" para forzar los extremos
-    if abs(val) == 2: return val * 3.0
-    return val * 1.0
+def get_radical_value(m):
+    sign = 1 if m >= 0 else -1
+    return (m**2) * sign * 3.5  # Multiplicador agresivo para lanzar el punto a los bordes
 
-# 3. Líderes Mundiales (Coordenadas extremas para contraste)
+# 3. LÍDERES HISTÓRICOS (Coordenadas extremas)
 LEADERS = [
-    {"n": "Milei", "x": 165, "y": -150, "c": "#ffeb3b"},
-    {"n": "Stalin", "x": -180, "y": 180, "c": "#b71c1c"},
-    {"n": "Hitler", "x": 170, "y": 190, "c": "#424242"},
-    {"n": "Mao", "x": -190, "y": 160, "c": "#f44336"},
-    {"n": "Pol Pot", "x": -195, "y": 140, "c": "#880e4f"},
-    {"n": "Gandhi", "x": -120, "y": -160, "c": "#4caf50"},
-    {"n": "Pinochet", "x": 175, "y": 170, "c": "#0d47a1"},
-    {"n": "Rothbard", "x": 190, "y": -195, "c": "#ff9800"}
+    {"n": "Milei", "x": 85, "y": -75, "c": "#facc15"},
+    {"n": "Stalin", "x": -95, "y": 95, "c": "#ef4444"},
+    {"n": "Hitler", "x": 90, "y": 98, "c": "#4b5563"},
+    {"n": "Mao", "x": -98, "y": 85, "c": "#dc2626"},
+    {"n": "Pol Pot", "x": -99, "y": 70, "c": "#7f1d1d"},
+    {"n": "Pinochet", "x": 95, "y": 90, "c": "#1d4ed8"},
+    {"n": "Rothbard", "x": 99, "y": -99, "c": "#f97316"},
+    {"n": "Gandhi", "x": -65, "y": -80, "c": "#22c55e"}
 ]
 
-# 4. Banco de 85 Preguntas
+# 4. LAS 85 PREGUNTAS
+# a: eje (x/y), v: dirección, s: sub-eje (e=eco/industria, g=global/soberano)
 questions = [
-    {"t": "El mercado libre beneficia a todos a largo plazo.", "a": "x", "v": 1, "s": "ind"},
-    {"t": "La sanidad debe ser 100% pública y gratuita.", "a": "x", "v": -1, "s": None},
-    {"t": "El estado debe regular los precios del alquiler.", "a": "x", "v": -1, "s": None},
-    {"t": "La privatización de empresas eléctricas es positiva.", "a": "x", "v": 1, "s": "ind"},
-    {"t": "Los impuestos a las grandes fortunas deben subir.", "a": "x", "v": -1, "s": None},
-    {"t": "El proteccionismo nacional protege el empleo.", "a": "x", "v": -1, "s": "sob"},
-    {"t": "El salario mínimo debería eliminarse.", "a": "x", "v": 1, "s": None},
-    {"t": "El medio ambiente es más importante que el crecimiento económico.", "a": "x", "v": -1, "s": "eco"},
-    {"t": "Las subvenciones a empresas privadas deben desaparecer.", "a": "x", "v": 1, "s": None},
-    {"t": "La herencia es un derecho familiar intocable.", "a": "x", "v": 1, "s": None},
-    {"t": "La educación universitaria debe ser gratuita para todos.", "a": "x", "v": -1, "s": None},
-    {"t": "La competencia siempre mejora la calidad de los servicios.", "a": "x", "v": 1, "s": "ind"},
-    {"t": "El estado debe garantizar un puesto de trabajo a cada ciudadano.", "a": "x", "v": -1, "s": None},
-    {"t": "La propiedad privada debe ser absoluta y sin límites.", "a": "x", "v": 1, "s": None},
-    {"t": "Los bancos centrales no deberían existir.", "a": "x", "v": 1, "s": None},
-    {"t": "Las infraestructuras básicas (agua, luz) deben ser estatales.", "a": "x", "v": -1, "s": None},
-    {"t": "El comercio global es la principal vía para reducir la pobreza.", "a": "x", "v": 1, "s": "glob"},
-    {"t": "La especulación financiera debería estar prohibida.", "a": "x", "v": -1, "s": None},
-    {"t": "El gasto público excesivo es la causa de todos los males económicos.", "a": "x", "v": 1, "s": None},
-    {"t": "La caridad privada es más eficiente que la asistencia estatal.", "a": "x", "v": 1, "s": None},
-    {"t": "Los paraísos fiscales son una respuesta legítima a la presión fiscal.", "a": "x", "v": 1, "s": None},
-    {"t": "El estado debe rescatar a las empresas estratégicas en crisis.", "a": "x", "v": -1, "s": None},
-    {"t": "La austeridad fiscal es necesaria para el crecimiento sano.", "a": "x", "v": 1, "s": None},
-    {"t": "La desigualdad económica es un motor natural de progreso.", "a": "x", "v": 1, "s": None},
-    {"t": "Los sindicatos tienen actualmente demasiado poder.", "a": "x", "v": 1, "s": None},
-    {"t": "La moneda debería volver a estar respaldada por oro.", "a": "x", "v": 1, "s": None},
-    {"t": "La automatización requiere la implantación de una Renta Básica.", "a": "x", "v": -1, "s": None},
-    {"t": "Las patentes farmacéuticas frenan el progreso humano.", "a": "x", "v": -1, "s": None},
-    {"t": "El consumo masivo es fundamental para la felicidad social.", "a": "x", "v": 1, "s": "ind"},
-    {"t": "La jornada laboral debería reducirse por ley a 30 horas.", "a": "x", "v": -1, "s": None},
-    {"t": "La obediencia a la autoridad es una virtud que debe enseñarse.", "a": "y", "v": 1, "s": None},
-    {"t": "El aborto debe ser legal, seguro y gratuito.", "a": "y", "v": -1, "s": None},
-    {"t": "La religión no debe tener ninguna influencia en las leyes.", "a": "y", "v": -1, "s": None},
-    {"t": "Se necesita un líder fuerte para poner orden en el país.", "a": "y", "v": 1, "s": None},
-    {"t": "El consumo de drogas debería ser una decisión privada legal.", "a": "y", "v": -1, "s": None},
-    {"t": "La cadena perpetua es necesaria para crímenes atroces.", "a": "y", "v": 1, "s": None},
-    {"t": "El control de fronteras debe ser estricto y militarizado.", "a": "y", "v": 1, "s": "sob"},
-    {"t": "El feminismo actual es una lucha necesaria y justa.", "a": "y", "v": -1, "s": None},
-    {"t": "La vigilancia estatal masiva es aceptable para evitar el terrorismo.", "a": "y", "v": 1, "s": None},
-    {"t": "La libertad de expresión debe ser absoluta, incluso si ofende.", "a": "y", "v": -1, "s": None},
-    {"t": "La eutanasia debe ser un derecho legal garantizado.", "a": "y", "v": -1, "s": None},
-    {"t": "El servicio militar debería volver a ser obligatorio.", "a": "y", "v": 1, "s": "sob"},
-    {"t": "La familia tradicional es la base de una sociedad estable.", "a": "y", "v": 1, "s": None},
-    {"t": "La pornografía debería ser ilegal por su daño social.", "a": "y", "v": 1, "s": None},
-    {"t": "El arte nunca debe ser censurado por motivos morales.", "a": "y", "v": -1, "s": None},
-    {"t": "La pena de muerte es una medida justa en casos extremos.", "a": "y", "v": 1, "s": None},
-    {"t": "La inmigración masiva pone en peligro la identidad nacional.", "a": "y", "v": 1, "s": "sob"},
-    {"t": "El matrimonio solo debería ser entre un hombre y una mujer.", "a": "y", "v": 1, "s": None},
-    {"t": "Las manifestaciones que bloquean calles deben ser prohibidas.", "a": "y", "v": 1, "s": None},
-    {"t": "La identidad de género es una construcción social, no biológica.", "a": "y", "v": -1, "s": None},
-    {"t": "La monarquía es una institución obsoleta que debe desaparecer.", "a": "y", "v": -1, "s": None},
-    {"t": "La policía necesita más autoridad y menos restricciones.", "a": "y", "v": 1, "s": None},
-    {"t": "La educación sexual en escuelas es esencial.", "a": "y", "v": -1, "s": None},
-    {"t": "Blasfemar contra figuras religiosas no debería ser delito.", "a": "y", "v": -1, "s": None},
-    {"t": "La bandera nacional es el símbolo más sagrado.", "a": "y", "v": 1, "s": "sob"},
-    {"t": "La clonación humana debería permitirse para el progreso médico.", "a": "y", "v": -1, "s": "ind"},
-    {"t": "La corrección política está destruyendo la libertad de expresión.", "a": "y", "v": 1, "s": None},
-    {"t": "El multiculturalismo ha sido un fracaso en Occidente.", "a": "y", "v": 1, "s": "sob"},
-    {"t": "La experimentación con animales es un mal necesario.", "a": "y", "v": 1, "s": "ind"},
-    {"t": "El estado debe fomentar activamente la natalidad.", "a": "y", "v": 1, "s": None},
-    {"t": "La piratería digital no es un crimen real contra la propiedad.", "a": "y", "v": -1, "s": None},
-    {"t": "La disciplina en las escuelas debe volver a ser estricta.", "a": "y", "v": 1, "s": None},
-    {"t": "La IA debe ser controlada por el gobierno para evitar riesgos.", "a": "y", "v": 1, "s": "ind"},
-    {"t": "La energía nuclear es la mejor solución al cambio climático.", "a": "x", "v": 1, "s": "ind"},
-    {"t": "Los animales deberían tener derechos legales similares a los humanos.", "a": "y", "v": -1, "s": "eco"},
-    {"t": "La colonización del espacio debe ser liderada por empresas privadas.", "a": "x", "v": 1, "s": "ind"},
-    {"t": "El estado debe financiar el cine y el teatro con dinero público.", "a": "x", "v": -1, "s": None},
-    {"t": "La globalización destruye las culturas locales.", "a": "y", "v": 1, "s": "sob"},
-    {"t": "El capitalismo es inherentemente destructivo para el planeta.", "a": "x", "v": -1, "s": "eco"},
-    {"t": "Los ciudadanos deberían votar directamente todas las leyes por internet.", "a": "y", "v": -1, "s": None},
-    {"t": "Las cárceles deben servir para castigar, no para reinsertar.", "a": "y", "v": 1, "s": None},
-    {"t": "Tener éxito económico es prueba de esfuerzo y mérito personal.", "a": "x", "v": 1, "s": None},
-    {"t": "Internet debería ser un servicio público gratuito e inalienable.", "a": "x", "v": -1, "s": None},
-    {"t": "Debería haber clases de religión obligatorias en la escuela.", "a": "y", "v": 1, "s": None},
-    {"t": "La intervención militar exterior es justa si protege los DDHH.", "a": "y", "v": 1, "s": "glob"},
-    {"t": "Las criptomonedas son el futuro de la libertad económica.", "a": "x", "v": 1, "s": None},
-    {"t": "Es justo que un CEO gane 500 veces más que un empleado.", "a": "x", "v": 1, "s": None},
-    {"t": "El estado debería prohibir la comida basura por salud pública.", "a": "y", "v": 1, "s": "eco"},
-    {"t": "La diversidad étnica es la mayor fortaleza de una nación.", "a": "y", "v": -1, "s": "glob"},
-    {"t": "Las huelgas generales suelen hacer más daño que bien.", "a": "x", "v": 1, "s": None},
-    {"t": "La tecnología nos está alejando de nuestra verdadera esencia.", "a": "y", "v": 1, "s": "eco"},
-    {"t": "Los ricos deberían pagar un 90% de impuestos.", "a": "x", "v": -1, "s": None},
-    {"t": "El estado debe prohibir los coches de combustión pronto.", "a": "x", "v": -1, "s": "eco"},
-    {"t": "Sin una jerarquía clara, la sociedad colapsa.", "a": "y", "v": 1, "s": None},
-    {"t": "El pasado siempre fue mejor que el presente.", "a": "y", "v": 1, "s": None}
+    {"t": "1. El mercado libre es el único sistema moral de cooperación.", "a": "x", "v": 1, "s": "e"},
+    {"t": "2. La sanidad debe ser 100% pública y gratuita.", "a": "x", "v": -1, "s": None},
+    {"t": "3. El estado debe regular los precios del alquiler.", "a": "x", "v": -1, "s": None},
+    {"t": "4. La privatización de eléctricas es positiva.", "a": "x", "v": 1, "s": "e"},
+    {"t": "5. Los impuestos a las grandes fortunas deben subir.", "a": "x", "v": -1, "s": None},
+    {"t": "6. El proteccionismo protege el empleo local.", "a": "x", "v": -1, "s": "g"},
+    {"t": "7. El salario mínimo debería eliminarse.", "a": "x", "v": 1, "s": None},
+    {"t": "8. El medio ambiente es más importante que el PIB.", "a": "x", "v": -1, "s": "e"},
+    {"t": "9. Las subvenciones a empresas deben desaparecer.", "a": "x", "v": 1, "s": None},
+    {"t": "10. La herencia es un derecho familiar intocable.", "a": "x", "v": 1, "s": None},
+    {"t": "11. Educación universitaria gratuita para todos.", "a": "x", "v": -1, "s": None},
+    {"t": "12. La competencia siempre mejora la calidad.", "a": "x", "v": 1, "s": "e"},
+    {"t": "13. El estado debe garantizar trabajo a todos.", "a": "x", "v": -1, "s": None},
+    {"t": "14. La propiedad privada debe ser absoluta.", "a": "x", "v": 1, "s": None},
+    {"t": "15. Los bancos centrales no deberían existir.", "a": "x", "v": 1, "s": None},
+    {"t": "16. Infraestructuras básicas deben ser estatales.", "a": "x", "v": -1, "s": None},
+    {"t": "17. El comercio global reduce la pobreza.", "a": "x", "v": 1, "s": "g"},
+    {"t": "18. La especulación financiera debe prohibirse.", "a": "x", "v": -1, "s": None},
+    {"t": "19. El gasto público excesivo daña la nación.", "a": "x", "v": 1, "s": None},
+    {"t": "20. La caridad privada supera al bienestar estatal.", "a": "x", "v": 1, "s": None},
+    {"t": "21. Los paraísos fiscales son legítimos.", "a": "x", "v": 1, "s": None},
+    {"t": "22. Rescate estatal a empresas en crisis.", "a": "x", "v": -1, "s": None},
+    {"t": "23. Austeridad fiscal en tiempos de crisis.", "a": "x", "v": 1, "s": None},
+    {"t": "24. La desigualdad es un motor natural.", "a": "x", "v": 1, "s": None},
+    {"t": "25. Los sindicatos tienen demasiado poder.", "a": "x", "v": 1, "s": None},
+    {"t": "26. Volver al patrón oro.", "a": "x", "v": 1, "s": None},
+    {"t": "27. Renta básica por automatización.", "a": "x", "v": -1, "s": None},
+    {"t": "28. Abolir patentes farmacéuticas.", "a": "x", "v": -1, "s": None},
+    {"t": "29. El consumo masivo es progreso.", "a": "x", "v": 1, "s": "e"},
+    {"t": "30. Jornada laboral de 30 horas por ley.", "a": "x", "v": -1, "s": None},
+    {"t": "31. La meritocracia es real hoy día.", "a": "x", "v": 1, "s": None},
+    {"t": "32. Monopolios naturales deben ser públicos.", "a": "x", "v": -1, "s": None},
+    {"t": "33. El FMI es beneficioso.", "a": "x", "v": 1, "s": "g"},
+    {"t": "34. Obedecer a la autoridad es una virtud.", "a": "y", "v": 1, "s": None},
+    {"t": "35. Aborto legal, seguro y gratuito.", "a": "y", "v": -1, "s": None},
+    {"t": "36. Separación absoluta Iglesia-Estado.", "a": "y", "v": -1, "s": None},
+    {"t": "37. Un líder fuerte para poner orden.", "a": "y", "v": 1, "s": None},
+    {"t": "38. Legalización total de la marihuana.", "a": "y", "v": -1, "s": None},
+    {"t": "39. Cadena perpetua para crímenes graves.", "a": "y", "v": 1, "s": None},
+    {"t": "40. Control fronterizo militarizado.", "a": "y", "v": 1, "s": "g"},
+    {"t": "41. El feminismo actual es necesario.", "a": "y", "v": -1, "s": None},
+    {"t": "42. Vigilancia masiva contra terrorismo.", "a": "y", "v": 1, "s": None},
+    {"t": "43. Libertad de expresión total (ofensa incluida).", "a": "y", "v": -1, "s": None},
+    {"t": "44. Eutanasia como derecho legal.", "a": "y", "v": -1, "s": None},
+    {"t": "45. Servicio militar obligatorio.", "a": "y", "v": 1, "s": "g"},
+    {"t": "46. Familia tradicional como base social.", "a": "y", "v": 1, "s": None},
+    {"t": "47. Prohibición de la pornografía.", "a": "y", "v": 1, "s": None},
+    {"t": "48. El arte nunca debe ser censurado.", "a": "y", "v": -1, "s": None},
+    {"t": "49. Pena de muerte en casos extremos.", "a": "y", "v": 1, "s": None},
+    {"t": "50. La inmigración diluye la identidad nacional.", "a": "y", "v": 1, "s": "g"},
+    {"t": "51. Matrimonio solo hombre-mujer.", "a": "y", "v": 1, "s": None},
+    {"t": "52. Prohibir protestas que corten calles.", "a": "y", "v": 1, "s": None},
+    {"t": "53. Género como construcción social.", "a": "y", "v": -1, "s": None},
+    {"t": "54. Abolición de la monarquía.", "a": "y", "v": -1, "s": None},
+    {"t": "55. Más poderes para la policía.", "a": "y", "v": 1, "s": None},
+    {"t": "56. Educación sexual obligatoria.", "a": "y", "v": -1, "s": None},
+    {"t": "57. No debe existir el delito de blasfemia.", "a": "y", "v": -1, "s": None},
+    {"t": "58. La bandera es el símbolo máximo.", "a": "y", "v": 1, "s": "g"},
+    {"t": "59. Permitir clonación humana.", "a": "y", "v": -1, "s": "e"},
+    {"t": "60. La corrección política es censura.", "a": "y", "v": 1, "s": None},
+    {"t": "61. El multiculturalismo ha fallado.", "a": "y", "v": 1, "s": "g"},
+    {"t": "62. Experimentación animal necesaria.", "a": "y", "v": 1, "s": "e"},
+    {"t": "63. Fomentar natalidad desde el estado.", "a": "y", "v": 1, "s": None},
+    {"t": "64. La piratería digital no es robo.", "a": "y", "v": -1, "s": None},
+    {"t": "65. Disciplina escolar estricta.", "a": "y", "v": 1, "s": None},
+    {"t": "66. Control gubernamental de la IA.", "a": "y", "v": 1, "s": "e"},
+    {"t": "67. Energía nuclear como solución.", "a": "x", "v": 1, "s": "e"},
+    {"t": "68. Derechos legales para animales.", "a": "y", "v": -1, "s": "e"},
+    {"t": "69. Colonización espacial privada.", "a": "x", "v": 1, "s": "e"},
+    {"t": "70. Derecho a portar armas.", "a": "y", "v": -1, "s": None},
+    {"t": "71. Subvencionar cine y cultura.", "a": "x", "v": -1, "s": None},
+    {"t": "72. La globalización mata culturas locales.", "a": "y", "v": 1, "s": "g"},
+    {"t": "73. El capitalismo destruye el planeta.", "a": "x", "v": -1, "s": "e"},
+    {"t": "74. Democracia directa por internet.", "a": "y", "v": -1, "s": None},
+    {"t": "75. Cárceles para castigo, no reinserción.", "a": "y", "v": 1, "s": None},
+    {"t": "76. La riqueza es mérito individual.", "a": "x", "v": 1, "s": None},
+    {"t": "77. Internet como derecho humano básico.", "a": "x", "v": -1, "s": None},
+    {"t": "78. Religión obligatoria en escuelas.", "a": "y", "v": 1, "s": None},
+    {"t": "79. Intervención militar por DDHH.", "a": "y", "v": 1, "s": "g"},
+    {"t": "80. Criptomonedas sobre moneda estatal.", "a": "x", "v": 1, "s": None},
+    {"t": "81. CEO ganando 500x que empleado es justo.", "a": "x", "v": 1, "s": None},
+    {"t": "82. Prohibir comida basura por salud.", "a": "y", "v": 1, "s": "e"},
+    {"t": "83. La diversidad es nuestra fuerza.", "a": "y", "v": -1, "s": "g"},
+    {"t": "84. Las huelgas dañan la nación.", "a": "x", "v": 1, "s": None},
+    {"t": "85. La tecnología nos deshumaniza.", "a": "y", "v": 1, "s": "e"}
 ]
 
 def responder(m):
     q = questions[st.session_state.idx]
-    p = get_radical_points(m) * q["v"]
-    st.session_state.history.append((p if q["a"]=="x" else 0, p if q["a"]=="y" else 0))
-    if q["a"] == "x": st.session_state.x += p
-    else: st.session_state.y += p
-    if q["s"] == "ind": st.session_state.eco += p
-    if q["s"] == "glob": st.session_state.glob += p
+    val = get_radical_value(m) * q["v"]
+    st.session_state.hist.append((val if q["a"]=="x" else 0, val if q["a"]=="y" else 0))
+    if q["a"] == "x": st.session_state.x += val
+    else: st.session_state.y += val
+    if q["s"] == "e": st.session_state.eco += val
+    if q["s"] == "g": st.session_state.glob += val
     st.session_state.idx += 1
 
-# --- LÓGICA DE PANTALLAS ---
+# --- PANTALLAS ---
 if st.session_state.idx >= len(questions):
-    st.markdown("<h1>📊 Informe de Ideología Radical</h1>", unsafe_allow_html=True)
-    
+    st.markdown("## 🏁 RESULTADOS FINALES")
     x, y = st.session_state.x, st.session_state.y
-    if x > 50 and y > 50: 
-        n, d = "AUTORITARISMO NACIONAL", "Defiendes un Estado implacable que preserve la tradición y el orden bajo una economía de mercado jerárquica."
-    elif x < -50 and y > 50: 
-        n, d = "COMUNISMO DE ESTADO", "Abogas por la colectivización forzosa y la eliminación de la propiedad privada bajo un mando central absoluto."
-    elif x > 50 and y < -50: 
-        n, d = "ANARCOCAPITALISMO", "Crees en la soberanía absoluta del individuo y la propiedad. El Estado es, para ti, un agresor que debe desaparecer."
-    elif x < -50 and y < -50: 
-        n, d = "ANARCOCOMUNISMO", "Buscas la disolución de toda jerarquía y la creación de comunidades voluntarias basadas en la ayuda mutua radical."
-    else:
-        n, d = "CENTRISMO PRAGMÁTICO", "Tus visiones evitan los extremos, buscando un equilibrio funcional entre libertad, igualdad y orden."
+    
+    # Análisis Ideológico Extremo
+    if x > 50 and y > 50: i, d = "AUTORITARISMO NACIONAL", "Orden supremo, mercado jerárquico y defensa de la soberanía nacional."
+    elif x < -50 and y > 50: i, d = "TOTALITARISMO COLECTIVISTA", "Control estatal absoluto y abolición de la propiedad privada."
+    elif x > 50 and y < -50: i, d = "ANARCOCAPITALISMO", "Soberanía individual absoluta. El Estado es un agresor ilegítimo."
+    elif x < -50 and y < -50: i, d = "ANARCOCOMUNISMO", "Sociedad sin clases ni estado basada en la cooperación mutua."
+    else: i, d = "CENTRISMO", "Tus visiones son equilibradas o pragmáticas."
 
-    st.markdown(f"<div class='result-header'><h2>{n}</h2></div><div class='result-body'><p>{d}</p></div>", unsafe_allow_html=True)
+    st.success(f"**Ideología:** {i}")
+    st.info(d)
 
     # Sub-ejes
     c1, c2 = st.columns(2)
-    with c1: st.info(f"⚙️ **Eje Industrial:** {'Productivista' if st.session_state.eco > 0 else 'Ecologista'}")
-    with c2: st.info(f"🌐 **Eje Global:** {'Globalista' if st.session_state.glob > 0 else 'Soberanista'}")
+    with c1: st.metric("🏭 Desarrollo", "Industrialista" if st.session_state.eco > 0 else "Ecologista")
+    with c2: st.metric("🌐 Exterior", "Soberanista" if st.session_state.glob > 0 else "Globalista")
 
-    # Mapa con puntos (Cálculo preciso para chart de 450px)
-    def get_b64(file):
+    # Mapa
+    def get_b64(p):
         try:
-            with open(file, "rb") as f: return base64.b64encode(f.read()).decode()
+            with open(p, "rb") as f: return base64.b64encode(f.read()).decode()
         except: return ""
-
-    img_data = get_b64("chart.png")
-    leader_html = ""
-    for l in LEADERS:
-        lx = 50 + (l["x"] * 0.22); ly = 50 - (l["y"] * 0.22)
-        leader_html += f'<div class="dot leader-dot" style="left:{lx}%; top:{ly}%; background:{l["c"]};" title="{l["n"]}"></div>'
-
-    ux = 50 + (x * 0.22); uy = 50 - (y * 0.22)
     
+    b64 = get_b64("chart.png")
+    l_html = ""
+    for l in LEADERS:
+        left, top = 50 + (l["x"]/2), 50 - (l["y"]/2)
+        l_html += f'<div class="marker leader-marker" style="left:{left}%; top:{top}%; background:{l["c"]};"></div>'
+
+    ux, uy = max(min(x, 100), -100), max(min(y, 100), -100)
     st.markdown(f"""
         <div class="map-container">
-            <img src="data:image/png;base64,{img_data}" class="chart-img">
-            {leader_html}
-            <div class="dot user-dot" style="left:{ux}%; top:{uy}%;">TÚ</div>
+            <img src="data:image/png;base64,{b64}" class="chart-img">
+            {l_html}
+            <div class="marker user-marker" style="left:{50+ux/2}%; top:{50-uy/2}%;">TÚ</div>
         </div>
-        <p style='text-align:center; font-size:11px;'>🔴 Tú | 🟡 Milei | 🔴 Stalin | ⚫ Hitler | 🔴 Mao | 🟣 Pol Pot | 🔵 Pinochet</p>
     """, unsafe_allow_html=True)
 
-    # Botón PDF / Imprimir
-    if st.button("📄 GENERAR PDF / IMPRIMIR"):
+    if st.button("🖨️ GUARDAR PDF"):
         st.components.v1.html("<script>window.print();</script>", height=0)
 
-    if st.button("🔄 REPETIR TEST"):
-        st.session_state.idx, st.session_state.x, st.session_state.y = 0, 0, 0
-        st.session_state.history = []
+    if st.button("🔄 REINICIAR"):
+        st.session_state.update({'idx':0, 'x':0, 'y':0, 'eco':0, 'glob':0, 'hist':[]})
         st.rerun()
 
 else:
     st.progress(st.session_state.idx / len(questions))
-    st.markdown(f"<h3 style='text-align:center; color:#0d47a1; min-height:100px;'>{questions[st.session_state.idx]['t']}</h3>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='text-align:center;'>{questions[st.session_state.idx]['t']}</h2>", unsafe_allow_html=True)
     
     if st.button("✨ Totalmente de acuerdo"): responder(2); st.rerun()
     if st.button("👍 De acuerdo"): responder(1); st.rerun()
-    if st.button("⚪ Neutral / No sé"): responder(0); st.rerun()
+    if st.button("⚪ Neutral"): responder(0); st.rerun()
     if st.button("👎 En desacuerdo"): responder(-1); st.rerun()
     if st.button("🔥 Totalmente en desacuerdo"): responder(-2); st.rerun()
     
     if st.session_state.idx > 0:
-        if st.button("⬅️ VOLVER ATRÁS"):
+        if st.button("⬅️ Atrás"):
             st.session_state.idx -= 1
-            px, py = st.session_state.history.pop()
-            st.session_state.x -= px; st.session_state.y -= py
+            hx, hy = st.session_state.hist.pop()
+            st.session_state.x -= hx; st.session_state.y -= hy
             st.rerun()
