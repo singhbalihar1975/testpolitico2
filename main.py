@@ -1,265 +1,301 @@
 import streamlit as st
-import base64
 
-# 1. CONFIGURACIÓN Y CSS REVISADO
-st.set_page_config(page_title="Brújula Política Estudiantil", layout="centered")
+# 1. CONFIGURACIÓN Y ESTILO
+st.set_page_config(page_title="Compás Político", layout="centered")
 
 st.markdown("""
     <style>
-    /* Fondo Azul Muy Claro */
-    .stApp { background-color: #E3F2FD; }
+    .stApp { background-color: #F0F8FF; }
     
-    /* PREGUNTAS GIGANTES */
     .question-text {
         text-align: center;
-        font-size: 38px !important; 
-        font-weight: 800;
-        color: #0D47A1;
-        margin: 40px 0px 60px 0px;
-        line-height: 1.1;
+        font-size: 28px !important; 
+        font-weight: 700;
+        color: #1E3A8A;
+        margin: 25px 0px;
+        line-height: 1.2;
     }
 
-    /* ALINEACIÓN LIGERAMENTE A LA IZQUIERDA */
+    /* BOTONES AZUL CLARO ALINEADOS A LA IZQUIERDA */
     div.stButton {
         display: flex;
-        justify-content: flex-start; /* Movidos a la izquierda */
-        padding-left: 10%; /* Ajuste fino de posición */
-        width: 100%;
+        justify-content: flex-start;
+        padding-left: 5%;
     }
 
     div.stButton > button {
-        width: 550px !important; 
-        height: 65px !important;
-        border-radius: 15px !important;
-        font-size: 19px !important;
-        font-weight: bold !important;
+        width: 500px !important; 
+        height: 55px !important;
+        border-radius: 12px !important;
+        font-size: 17px !important;
+        background-color: #BEE3F8 !important; 
+        color: #2C5282 !important;
         border: none !important;
-        margin: 5px 0px !important;
-        /* COLOR AZUL CLARO SOLICITADO */
-        background-color: #BBDEFB !important;
-        color: #0D47A1 !important;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.05) !important;
-        transition: 0.3s;
+        margin: 3px 0px !important;
+        transition: 0.2s;
+        text-align: left !important;
+        padding-left: 20px !important;
     }
 
-    /* EFECTO HOVER PARA LOS BOTONES AZULES */
     div.stButton > button:hover { 
-        background-color: #90CAF9 !important;
-        transform: translateX(5px); /* Pequeño desplazamiento al pasar el ratón */
+        background-color: #90CDF4 !important;
+        transform: translateX(5px);
     }
 
-    /* BOTONES FINALES (NEGROS Y GRANDES) */
-    .final-section div.stButton {
-        justify-content: center !important;
-        padding-left: 0 !important;
+    /* GRÁFICO */
+    .map-container {
+        position: relative; width: 500px; height: 500px; 
+        margin: 20px auto; background: white;
+        border: 2px solid #CBD5E0; border-radius: 8px;
+    }
+    .axis-h { position: absolute; width: 100%; height: 2px; background: #A0AEC0; top: 50%; }
+    .axis-v { position: absolute; width: 2px; height: 100%; background: #A0AEC0; left: 50%; }
+    
+    .label-leader {
+        position: absolute;
+        font-size: 10px;
+        font-weight: bold;
+        color: #2D3748;
+        text-align: center;
+        width: 70px;
+        transform: translateX(-50%);
+        margin-top: 15px;
+    }
+
+    .dot { 
+        position: absolute; border-radius: 50%; 
+        width: 12px; height: 12px; 
+        transform: translate(-50%, -50%);
     }
     
-    .final-section div.stButton > button {
-        background-color: #000000 !important;
-        color: #FFFFFF !important;
-        width: 100% !important;
-        height: 75px !important;
-        font-size: 22px !important;
-        border-radius: 10px !important;
-    }
-
-    /* TARJETA DE RESULTADOS */
-    .result-card {
-        background-color: white; padding: 40px; border-radius: 30px;
-        text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-        border: 6px solid #1976D2;
-    }
-    .result-title { font-size: 50px; font-weight: 900; color: #0D47A1; }
-    .result-desc { font-size: 24px; color: #37474F; }
-
-    /* MAPA */
-    .map-container {
-        position: relative; width: 450px; height: 450px; 
-        margin: 30px auto; border: 10px solid white; border-radius: 20px;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.2); overflow: hidden;
-        background-color: white;
-    }
-    .dot { position: absolute; border-radius: 50%; border: 2px solid white; transform: translate(-50%, -50%); }
     .user-dot {
-        width: 40px; height: 40px; background-color: #FF1744; z-index: 100;
-        box-shadow: 0 0 20px #FF1744; border: 4px solid white; color: white;
-        display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;
+        width: 22px; height: 22px; background: red;
+        border: 3px solid white; box-shadow: 0 0 10px red;
+        z-index: 100;
+    }
+
+    .final-btn > div.stButton > button {
+        background-color: #2B6CB0 !important;
+        color: white !important;
+        width: 100% !important;
+        text-align: center !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. LÓGICA DE DATOS
+# 2. LÍDERES
+LEADERS = [
+    {"n": "Milei", "x": 8.5, "y": -8.5, "c": "#F6AD55"},
+    {"n": "Stalin", "x": -9, "y": 9, "c": "#F56565"},
+    {"n": "Hitler", "x": 8, "y": 9.5, "c": "#4A5568"},
+    {"n": "Mao", "x": -9.5, "y": 8.5, "c": "#E53E3E"},
+    {"n": "Gandhi", "x": -6.5, "y": -7.5, "c": "#68D391"},
+    {"n": "Thatcher", "x": 7.5, "y": 6.5, "c": "#4299E1"},
+    {"n": "Castro", "x": -8.5, "y": 7, "c": "#38A169"},
+    {"n": "Friedman", "x": 8, "y": -5, "c": "#ECC94B"},
+    {"n": "Sanders", "x": -5, "y": -3, "c": "#63B3ED"}
+]
+
+# 3. 85 PREGUNTAS (Simplificadas para 4º ESO)
+questions = [
+    # ECONÓMICAS (X)
+    {"t": "El gobierno no debería decir a las empresas cuánto tienen que pagar a sus trabajadores.", "a": "x", "v": 1},
+    {"t": "La sanidad debería ser gratis y pagada con los impuestos de todos.", "a": "x", "v": -1},
+    {"t": "El Estado debería ser el dueño de las empresas de luz y agua.", "a": "x", "v": -1},
+    {"t": "Es mejor que los colegios sean privados para que haya competencia.", "a": "x", "v": 1},
+    {"t": "Los que más dinero ganan deben pagar muchos más impuestos.", "a": "x", "v": -1},
+    {"t": "El gobierno debería poner límites al precio de la comida básica.", "a": "x", "v": -1},
+    {"t": "Si una empresa va a quebrar, el gobierno no debería ayudarla con dinero público.", "a": "x", "v": 1},
+    {"t": "Es mejor comprar productos de nuestro país que traerlos de fuera.", "a": "x", "v": -1},
+    {"t": "Cualquiera debería poder abrir un negocio sin pedir tantos permisos al gobierno.", "a": "x", "v": 1},
+    {"t": "Las huelgas de trabajadores hacen más daño que bien a la economía.", "a": "x", "v": 1},
+    {"t": "El gobierno debe asegurar que todo el mundo tenga una casa, aunque sea regalada.", "a": "x", "v": -1},
+    {"t": "El libre mercado es la mejor forma de que un país sea rico.", "a": "x", "v": 1},
+    {"t": "Hacerse rico es un mérito personal y el Estado no debería quitarte ese dinero.", "a": "x", "v": 1},
+    {"t": "Los sindicatos tienen demasiado poder hoy en día.", "a": "x", "v": 1},
+    {"t": "El transporte público debería ser totalmente gratuito.", "a": "x", "v": -1},
+    {"t": "La competencia entre empresas hace que los productos sean más baratos.", "a": "x", "v": 1},
+    {"t": "El Estado debería dar un sueldo básico a todos los ciudadanos solo por existir.", "a": "x", "v": -1},
+    {"t": "Pedir préstamos al banco debería tener un interés controlado por el gobierno.", "a": "x", "v": -1},
+    {"t": "Las herencias no deberían tener impuestos; el dinero es de la familia.", "a": "x", "v": 1},
+    {"t": "La mayoría de servicios públicos funcionan peor que los privados.", "a": "x", "v": 1},
+    {"t": "El gobierno debería prohibir que las empresas despidan a gente si tienen beneficios.", "a": "x", "v": -1},
+    {"t": "Los paraísos fiscales deberían desaparecer para que todos paguen por igual.", "a": "x", "v": -1},
+    {"t": "El capitalismo es el sistema más justo que existe.", "a": "x", "v": 1},
+    {"t": "Las grandes fortunas deberían repartirse entre los más pobres.", "a": "x", "v": -1},
+    {"t": "Si trabajas más, es justo que ganes mucho más que los demás.", "a": "x", "v": 1},
+    {"t": "El Estado no debería cobrar impuestos por la gasolina o el diésel.", "a": "x", "v": 1},
+    {"t": "Las medicinas deberían ser gratis para todo el mundo sin excepción.", "a": "x", "v": -1},
+    {"t": "Es mejor que el dinero esté en el bolsillo de la gente que en el del gobierno.", "a": "x", "v": 1},
+    {"t": "Debería estar prohibido que una sola empresa controle todo un mercado (monopolio).", "a": "x", "v": -1},
+    {"t": "La publicidad engañosa debería estar castigada con multas muy altas.", "a": "x", "v": -1},
+    {"t": "La propiedad privada es sagrada y nadie debería tocarla.", "a": "x", "v": 1},
+    {"t": "El gobierno debería crear más empresas públicas para dar trabajo.", "a": "x", "v": -1},
+    {"t": "Los bancos centrales no deberían existir.", "a": "x", "v": 1},
+    {"t": "La desigualdad de dinero es natural y siempre existirá.", "a": "x", "v": 1},
+    {"t": "La universidad pública es una pérdida de dinero si no hay trabajo para todos.", "a": "x", "v": 1},
+    {"t": "El gobierno debería vigilar que las empresas no contaminen nada.", "a": "x", "v": -1},
+    {"t": "Bajar los impuestos a las empresas hace que contraten a más gente.", "a": "x", "v": 1},
+    {"t": "La tecnología y los robots deberían pertenecer a todos, no solo a los dueños.", "a": "x", "v": -1},
+    {"t": "Si el gobierno gasta mucho, la moneda pierde valor (inflación).", "a": "x", "v": 1},
+    {"t": "La luz y el gas deberían tener un precio fijo puesto por el Estado.", "a": "x", "v": -1},
+    {"t": "No debería haber fronteras para el comercio entre países.", "a": "x", "v": 1},
+    {"t": "El Estado gasta demasiado dinero en cosas que no sirven para nada.", "a": "x", "v": 1},
+    {"t": "Es injusto que haya gente con mil millones de euros mientras otros pasan hambre.", "a": "x", "v": -1},
+
+    # SOCIALES / AUTORIDAD (Y)
+    {"t": "Obedecer a los padres y a los profesores es la base de una buena sociedad.", "a": "y", "v": 1},
+    {"t": "Cada uno debería poder decir lo que quiera, aunque moleste a otros.", "a": "y", "v": -1},
+    {"t": "El gobierno debería poner leyes más duras contra los delincuentes.", "a": "y", "v": 1},
+    {"t": "El aborto debería ser legal y una decisión de la mujer.", "a": "y", "v": -1},
+    {"t": "Hace falta un líder fuerte que ponga orden cuando las cosas van mal.", "a": "y", "v": 1},
+    {"t": "La religión no debería influir en las leyes de un país.", "a": "y", "v": -1},
+    {"t": "El ejército es necesario para mantener la seguridad de la nación.", "a": "y", "v": 1},
+    {"t": "La eutanasia (ayudar a morir a alguien muy enfermo) debería ser legal.", "a": "y", "v": -1},
+    {"t": "El Estado debería vigilar internet para evitar que se digan mentiras.", "a": "y", "v": 1},
+    {"t": "Consumir drogas debería ser una elección libre de cada adulto.", "a": "y", "v": -1},
+    {"t": "Nuestra bandera y nuestro país son lo más importante.", "a": "y", "v": 1},
+    {"t": "El matrimonio entre personas del mismo sexo es un derecho justo.", "a": "y", "v": -1},
+    {"t": "Debería haber más cámaras de vigilancia en las calles para evitar robos.", "a": "y", "v": 1},
+    {"t": "La educación sexual en el instituto es fundamental.", "a": "y", "v": -1},
+    {"t": "Es necesario controlar más quién entra en nuestro país (fronteras).", "a": "y", "v": 1},
+    {"t": "La cultura de nuestro país debe ser protegida frente a culturas extranjeras.", "a": "y", "v": 1},
+    {"t": "Protestar en la calle cortando el tráfico debería estar prohibido.", "a": "y", "v": 1},
+    {"t": "Las tradiciones de toda la vida se están perdiendo y eso es malo.", "a": "y", "v": 1},
+    {"t": "El Estado no tiene por qué saber lo que hago en mi vida privada.", "a": "y", "v": -1},
+    {"t": "La pena de muerte debería existir para crímenes muy horribles.", "a": "y", "v": 1},
+    {"t": "Es más importante el orden público que la libertad individual.", "a": "y", "v": 1},
+    {"t": "Cualquier persona debería poder vestirse o ser como quiera sin juicios.", "a": "y", "v": -1},
+    {"t": "La disciplina en los colegios debería ser mucho más estricta.", "a": "y", "v": 1},
+    {"t": "Insultar a los símbolos nacionales (himno, bandera) debería ser delito.", "a": "y", "v": 1},
+    {"t": "El gobierno debería prohibir los videojuegos violentos.", "a": "y", "v": 1},
+    {"t": "Las minorías deben tener leyes especiales que las protejan.", "a": "y", "v": -1},
+    {"t": "El servicio militar debería volver a ser obligatorio.", "a": "y", "v": 1},
+    {"t": "La policía necesita más autoridad para hacer su trabajo.", "a": "y", "v": 1},
+    {"t": "La pornografía debería estar prohibida o muy controlada.", "a": "y", "v": 1},
+    {"t": "No se debe permitir que la gente falte al respeto a las religiones.", "a": "y", "v": 1},
+    {"t": "La globalización está borrando lo que nos hace únicos como país.", "a": "y", "v": 1},
+    {"t": "Los científicos deberían poder clonar humanos si sirve para curar enfermedades.", "a": "y", "v": -1},
+    {"t": "La familia formada por padre y madre es el modelo ideal.", "a": "y", "v": 1},
+    {"t": "El arte no debería ser censurado, aunque sea provocativo.", "a": "y", "v": -1},
+    {"t": "La cárcel debe ser un lugar de castigo, no un hotel.", "a": "y", "v": 1},
+    {"t": "Fumar tabaco debería estar prohibido en todos los lugares públicos.", "a": "y", "v": 1},
+    {"t": "Cada pueblo tiene derecho a decidir si quiere ser independiente.", "a": "y", "v": -1},
+    {"t": "El Estado debería fomentar que la gente tenga más hijos.", "a": "y", "v": 1},
+    {"t": "La tecnología está haciendo que la gente sea menos respetuosa.", "a": "y", "v": 1},
+    {"t": "Debería ser legal llevar armas para defenderse.", "a": "y", "v": -1},
+    {"t": "La justicia debe ser rápida, aunque a veces se pierdan derechos del acusado.", "a": "y", "v": 1},
+    {"t": "El pasado de nuestra nación es algo de lo que estar muy orgullosos.", "a": "y", "v": 1}
+]
+
+# 4. LÓGICA DE ESTADO
 if 'idx' not in st.session_state:
     st.session_state.update({'idx': 0, 'x': 0.0, 'y': 0.0, 'hist': []})
 
 def responder(puntos):
     q = questions[st.session_state.idx]
-    val = puntos * 18.0 * q["v"] 
-    if q["a"] == "x": st.session_state.x += val
-    else: st.session_state.y += val
+    # Normalizamos el impacto según el número de preguntas de cada eje
+    total_x = len([qu for qu in questions if qu["a"] == "x"])
+    total_y = len([qu for qu in questions if qu["a"] == "y"])
+    
+    if q["a"] == "x": 
+        val = (puntos / 2) * (10 / (total_x / 2)) * q["v"]
+        st.session_state.x += val
+    else: 
+        val = (puntos / 2) * (10 / (total_y / 2)) * q["v"]
+        st.session_state.y += val
+    
     st.session_state.hist.append((val if q["a"]=="x" else 0, val if q["a"]=="y" else 0))
     st.session_state.idx += 1
 
-LEADERS = [
-    {"n": "Milei", "x": 175, "y": -165, "c": "#FFD600"},
-    {"n": "Stalin", "x": -195, "y": 195, "c": "#D32F2F"},
-    {"n": "Hitler", "x": 185, "y": 198, "c": "#37474F"},
-    {"n": "Mao", "x": -198, "y": 180, "c": "#F44336"},
-    {"n": "Gandhi", "x": -140, "y": -175, "c": "#4CAF50"},
-    {"n": "Rothbard", "x": 195, "y": -198, "c": "#FF9800"},
-    {"n": "Thatcher", "x": 155, "y": 120, "c": "#1976D2"},
-    {"n": "Castro", "x": -170, "y": 150, "c": "#2E7D32"}
-]
-
-# 3. PREGUNTAS (85)
-questions = [
-    {"t": "Cualquier persona debería poder abrir un negocio sin que el gobierno le ponga muchas reglas.", "a": "x", "v": 1},
-    {"t": "Los hospitales deberían ser siempre gratis y pagados con nuestros impuestos.", "a": "x", "v": -1},
-    {"t": "El gobierno debería poner un límite al precio del alquiler de los pisos.", "a": "x", "v": -1},
-    {"t": "Es mejor que la electricidad sea vendida por empresas privadas que por el gobierno.", "a": "x", "v": 1},
-    {"t": "La gente que tiene mucho dinero debería pagar muchísimos más impuestos que el resto.", "a": "x", "v": -1},
-    {"t": "Es mejor comprar productos fabricados aquí que traerlos de otros países.", "a": "x", "v": -1},
-    {"t": "No debería existir un sueldo mínimo; cada uno debería pactar lo que cobra.", "a": "x", "v": 1},
-    {"t": "Cuidar el planeta es más importante que ganar mucho dinero como país.", "a": "x", "v": -1},
-    {"t": "El gobierno no debería dar dinero (ayudas) a ninguna empresa privada.", "a": "x", "v": 1},
-    {"t": "Si mis padres mueren, todo su dinero debería ser mío sin pagar impuestos.", "a": "x", "v": 1},
-    {"t": "Ir a la universidad debería ser totalmente gratis para todo el mundo.", "a": "x", "v": -1},
-    {"t": "Si las empresas compiten entre ellas, los servicios serán mejores.", "a": "x", "v": 1},
-    {"t": "El gobierno debe asegurar que todo el mundo tenga un trabajo.", "a": "x", "v": -1},
-    {"t": "Nadie tiene derecho a quitarle nada a una persona si es su propiedad privada.", "a": "x", "v": 1},
-    {"t": "Los bancos centrales deberían desaparecer.", "a": "x", "v": 1},
-    {"t": "El agua y la luz deberían estar siempre en manos del gobierno.", "a": "x", "v": -1},
-    {"t": "Comprar y vender cosas con todo el mundo ayuda a que haya menos pobreza.", "a": "x", "v": 1},
-    {"t": "Debería estar prohibido ganar dinero solo apostando en la bolsa.", "a": "x", "v": -1},
-    {"t": "Que el gobierno gaste mucho dinero es lo que crea las crisis.", "a": "x", "v": 1},
-    {"t": "Las personas ayudan mejor a los pobres que el gobierno.", "a": "x", "v": 1},
-    {"t": "Los países que no cobran impuestos a las empresas son algo justo.", "a": "x", "v": 1},
-    {"t": "El gobierno debe ayudar con dinero a las empresas grandes si van a cerrar.", "a": "x", "v": -1},
-    {"t": "Para que un país vaya bien, hay que gastar menos de lo que se gana.", "a": "x", "v": 1},
-    {"t": "Es normal que haya gente rica y pobre; eso hace que la gente se esfuerce.", "a": "x", "v": 1},
-    {"t": "Los sindicatos de trabajadores tienen demasiado poder hoy en día.", "a": "x", "v": 1},
-    {"t": "El dinero debería valer por el oro que tenga el país.", "a": "x", "v": 1},
-    {"t": "Como las máquinas harán los trabajos, el gobierno debería darnos un sueldo a todos.", "a": "x", "v": -1},
-    {"t": "Las medicinas no deberían tener dueño ni patentes privadas.", "a": "x", "v": -1},
-    {"t": "Comprar muchas cosas es bueno para que la economía funcione.", "a": "x", "v": 1},
-    {"t": "Por ley, nadie debería trabajar más de 30 horas a la semana.", "a": "x", "v": -1},
-    {"t": "Obedecer a la autoridad es lo más importante que debe aprender un niño.", "a": "y", "v": 1},
-    {"t": "Cualquier mujer debería poder decidir si quiere abortar gratis.", "a": "y", "v": -1},
-    {"t": "La religión no debería influir en las leyes del país.", "a": "y", "v": -1},
-    {"t": "Hace falta un líder fuerte que mande con mano dura para poner orden.", "a": "y", "v": 1},
-    {"t": "Cada uno debería poder drogarse si quiere, es su propia vida.", "a": "y", "v": -1},
-    {"t": "Los criminales peligrosos no deberían salir nunca de la cárcel.", "a": "y", "v": 1},
-    {"t": "El ejército debería vigilar las fronteras para que nadie entre sin permiso.", "a": "y", "v": 1},
-    {"t": "La lucha de las mujeres por la igualdad es totalmente justa.", "a": "y", "v": -1},
-    {"t": "El gobierno puede espiarnos para evitar ataques terroristas.", "a": "y", "v": 1},
-    {"t": "Cada uno puede decir lo que quiera, aunque alguien se sienta insultado.", "a": "y", "v": -1},
-    {"t": "Si alguien muy enfermo quiere morir, el médico debería poder ayudarle.", "a": "y", "v": -1},
-    {"t": "Todos los jóvenes deberían hacer el servicio militar obligatorio.", "a": "y", "v": 1},
-    {"t": "La familia tradicional es la mejor base para la sociedad.", "a": "y", "v": 1},
-    {"t": "Ver películas para adultos debería estar prohibido por ley.", "a": "y", "v": 1},
-    {"t": "Nadie debería prohibir una obra de arte, aunque sea ofensiva.", "a": "y", "v": -1},
-    {"t": "La pena de muerte está bien para los peores criminales.", "a": "y", "v": 1},
-    {"t": "Que venga mucha gente de fuera hace que nuestra cultura se pierda.", "a": "y", "v": 1},
-    {"t": "El matrimonio solo debería ser entre un hombre y una mujer.", "a": "y", "v": 1},
-    {"t": "Debería estar prohibido cortar calles para hacer manifestaciones.", "a": "y", "v": 1},
-    {"t": "Uno elige lo que quiere ser, no nace con ello.", "a": "y", "v": -1},
-    {"t": "La monarquía ya no debería existir.", "a": "y", "v": -1},
-    {"t": "La policía necesita mucho más poder.", "a": "y", "v": 1},
-    {"t": "Aprender sobre sexo en el colegio es fundamental.", "a": "y", "v": -1},
-    {"t": "Insultar a la religión no debería ser un delito.", "a": "y", "v": -1},
-    {"t": "La bandera de nuestro país es algo sagrado.", "a": "y", "v": 1},
-    {"t": "Los científicos deberían poder clonar humanos.", "a": "y", "v": -1},
-    {"t": "Hay demasiada piel fina hoy en día.", "a": "y", "v": 1},
-    {"t": "Mezclar muchas culturas en el mismo barrio no funciona.", "a": "y", "v": 1},
-    {"t": "Es necesario probar medicinas con animales.", "a": "y", "v": 1},
-    {"t": "El gobierno debería pagar por tener hijos.", "a": "y", "v": 1},
-    {"t": "Bajarse películas no es un crimen.", "a": "y", "v": -1},
-    {"t": "Más disciplina en el colegio.", "a": "y", "v": 1},
-    {"t": "Controlar la IA es necesario.", "a": "y", "v": 1},
-    {"t": "Energía nuclear es la solución.", "a": "x", "v": 1},
-    {"t": "Animales con los mismos derechos.", "a": "y", "v": -1},
-    {"t": "El espacio debe ser privado.", "a": "x", "v": 1},
-    {"t": "El cine público es malgastar impuestos.", "a": "x", "v": 1},
-    {"t": "Globalización destruye costumbres.", "a": "y", "v": 1},
-    {"t": "El capitalismo rompe el planeta.", "a": "x", "v": -1},
-    {"t": "Votar por internet leyes.", "a": "y", "v": -1},
-    {"t": "Cárcel como castigo duro.", "a": "y", "v": 1},
-    {"t": "Ricos esforzados.", "a": "x", "v": 1},
-    {"t": "Internet gratis.", "a": "x", "v": -1},
-    {"t": "Religión obligatoria.", "a": "y", "v": 1},
-    {"t": "Ejército en guerras externas.", "a": "y", "v": 1},
-    {"t": "Criptos son libertad.", "a": "x", "v": 1},
-    {"t": "Jefes que ganan mucho es justo.", "a": "x", "v": 1},
-    {"t": "Prohibir comida basura.", "a": "y", "v": 1},
-    {"t": "Diversidad fortalece.", "a": "y", "v": -1},
-    {"t": "Huelgas pierden tiempo.", "a": "x", "v": 1},
-    {"t": "Tecnología nos hace menos humanos.", "a": "y", "v": 1},
-    {"t": "Multimillonarios deben pagar todo.", "a": "x", "v": -1},
-    {"t": "Prohibir gasolina.", "a": "x", "v": -1},
-    {"t": "Autoridad evita el caos.", "a": "y", "v": 1},
-    {"t": "Pasado mejor.", "a": "y", "v": 1}
-]
-
-# --- FLUJO DE LA APP ---
+# --- PANTALLA FINAL ---
 if st.session_state.idx >= len(questions):
+    st.title("📍 Tu Resultado Final")
     x, y = st.session_state.x, st.session_state.y
-    
-    # 15 Ideologías detalladas
-    if y > 120:
-        if x > 120: n, d = "FASCISMO", "Estado totalitario, nacionalismo extremo y economía dirigida."
-        elif x < -120: n, d = "ESTALINISMO", "Centralización absoluta, colectivismo y control estatal."
-        else: n, d = "AUTORITARISMO", "Prioridad total al orden y la autoridad del Estado."
-    elif y < -120:
-        if x > 120: n, d = "ANARCOCAPITALISMO", "Soberanía individual total y mercado sin Estado."
-        elif x < -120: n, d = "ANARCOCOMUNISMO", "Sociedad sin clases ni Estado basada en la ayuda mutua."
-        else: n, d = "ANARQUISMO", "Rechazo a toda autoridad jerárquica."
+
+    # Determinación simple de ideología
+    if y > 2:
+        res = "Autoritario"
+        if x > 2: id_nom = "Derecha Conservadora"
+        elif x < -2: id_nom = "Izquierda Autoritaria"
+        else: id_nom = "Populismo de Orden"
+    elif y < -2:
+        res = "Libertario"
+        if x > 2: id_nom = "Liberalismo / Libertarismo"
+        elif x < -2: id_nom = "Anarquismo / Socialismo Libertario"
+        else: id_nom = "Progresismo Radical"
     else:
-        if x > 100: n, d = "NEOLIBERALISMO", "Libre mercado, privatización y Estado mínimo."
-        elif x < -100: n, d = "SOCIALDEMOCRACIA", "Justicia social mediante impuestos en un sistema capitalista."
-        else: n, d = "CENTRO", "Equilibrio moderado entre libertad y orden."
+        if x > 2: id_nom = "Liberalismo Clásico"
+        elif x < -2: id_nom = "Socialdemocracia"
+        else: id_nom = "Centro Político"
 
-    st.markdown(f'<div class="result-card"><div class="result-title">{n}</div><div class="result-desc">{d}</div></div>', unsafe_allow_html=True)
+    st.success(f"Tu perfil es: **{id_nom}**")
 
-    # Mapa Político
-    l_html = "".join([f'<div class="dot" style="left:{50+(l["x"]*0.23)}%; top:{50-(l["y"]*0.23)}%; width:16px; height:16px; background:{l["c"]}; z-index:50;"></div>' for l in LEADERS])
-    ux, uy = 50 + (x * 0.23), 50 - (y * 0.23)
-    ux, uy = max(8, min(92, ux)), max(8, min(92, uy))
+    # Dibujar gráfico
+    labels_html = ""
+    for l in LEADERS:
+        pos_x = 50 + (l["x"] * 4.5)
+        pos_y = 50 - (l["y"] * 4.5)
+        labels_html += f"""
+            <div class="dot" style="left:{pos_x}%; top:{pos_y}%; background:{l['c']};"></div>
+            <div class="label-leader" style="left:{pos_x}%; top:{pos_y}%;">{l['n']}</div>
+        """
     
+    # Limitar usuario al cuadro
+    ux = max(2, min(98, 50 + (x * 4.5)))
+    uy = max(2, min(98, 50 - (y * 4.5)))
+
     st.markdown(f"""
         <div class="map-container">
-            <div style="position:absolute; width:100%; height:2px; background:#ddd; top:50%;"></div>
-            <div style="position:absolute; width:2px; height:100%; background:#ddd; left:50%;"></div>
-            {l_html}
-            <div class="dot user-dot" style="left:{ux}%; top:{uy}%;">Tú</div>
+            <div class="axis-h"></div>
+            <div class="axis-v"></div>
+            <div style="position:absolute; top:2%; left:42%; font-weight:bold; color:#718096; font-size:12px;">AUTORITARIO</div>
+            <div style="position:absolute; bottom:2%; left:43%; font-weight:bold; color:#718096; font-size:12px;">LIBERTARIO</div>
+            <div style="position:absolute; top:48%; left:1%; font-weight:bold; color:#718096; font-size:12px;">IZQUIERDA</div>
+            <div style="position:absolute; top:48%; right:1%; font-weight:bold; color:#718096; font-size:12px;">DERECHA</div>
+            {labels_html}
+            <div class="dot user-dot" style="left:{ux}%; top:{uy}%;"></div>
+            <div class="label-leader" style="left:{ux}%; top:{uy}%; color:red; font-size:14px; font-weight:900;">TÚ</div>
         </div>
     """, unsafe_allow_html=True)
 
-    # Sección Final
-    st.markdown('<div class="final-section">', unsafe_allow_html=True)
+    st.markdown('<div class="final-btn">', unsafe_allow_html=True)
     
-    # Botón Descargar (Lógica de texto)
-    resultado_texto = f"Resultado Brújula Política: {n}\nEje X (Econ): {x}\nEje Y (Soc): {y}"
-    st.download_button("💾 DESCARGAR RESULTADOS (.txt)", resultado_texto, file_name="mi_brujula.txt")
+    # Resumen para descarga
+    resumen = f"""COMPÁS POLÍTICO - RESULTADOS
+----------------------------------
+Ideología estimada: {id_nom}
+Puntuación Económica (X): {x:.2f} (Derecha si es positivo)
+Puntuación Social (Y): {y:.2f} (Autoritario si es positivo)
+
+Para guardar como PDF, selecciona 'Imprimir' en tu navegador y elige 'Guardar como PDF'."""
     
-    if st.button("🔄 REINICIAR TEST"):
-        st.session_state.update({'idx':0, 'x':0, 'y':0, 'hist':[]})
+    st.download_button("📄 DESCARGAR RESULTADO (.txt)", resumen, file_name="mi_compas_politico.txt")
+    
+    if st.button("🔄 REPETIR EL TEST"):
+        st.session_state.update({'idx': 0, 'x': 0.0, 'y': 0.0, 'hist': []})
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
+# --- PANTALLA DE PREGUNTAS ---
 else:
-    st.progress(st.session_state.idx / len(questions))
+    st.title("Compás Político")
+    st.write(f"Pregunta {st.session_state.idx + 1} de {len(questions)}")
+    st.progress((st.session_state.idx) / len(questions))
+    
     st.markdown(f'<div class="question-text">{questions[st.session_state.idx]["t"]}</div>', unsafe_allow_html=True)
     
-    # Botones con la nueva alineación y color azul claro
-    st.button("Totalmente de acuerdo", on_click=responder, args=(2,))
-    st.button("De acuerdo", on_click=responder, args=(1,))
-    st.button("No estoy seguro / Neutral", on_click=responder, args=(0,))
-    st.button("En desacuerdo", on_click=responder, args=(-1,))
-    st.button("Totalmente en desacuerdo", on_click=responder, args=(-2,))
+    st.button("✅ Totalmente de acuerdo", on_click=responder, args=(2,))
+    st.button("👍 De acuerdo", on_click=responder, args=(1,))
+    st.button("😐 Neutral / No lo sé", on_click=responder, args=(0,))
+    st.button("👎 En desacuerdo", on_click=responder, args=(-1,))
+    st.button("❌ Totalmente en desacuerdo", on_click=responder, args=(-2,))
 
     if st.session_state.idx > 0:
-        if st.button("⬅️ VOLVER A LA ANTERIOR"):
+        st.write("---")
+        if st.button("⬅️ Volver a la anterior"):
             px, py = st.session_state.hist.pop()
-            st.session_state.x -= px; st.session_state.y -= py
+            st.session_state.x -= px
+            st.session_state.y -= py
             st.session_state.idx -= 1
             st.rerun()
