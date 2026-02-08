@@ -4,55 +4,46 @@ import streamlit.components.v1 as components
 # 1. CONFIGURACIÓN DE PÁGINA
 st.set_page_config(page_title="Compás Político", layout="centered")
 
-# 2. ESTILOS CSS (Centrado Total, Botones Redondeados y Colores Originales)
+# 2. ESTILOS CSS (Centrado, Botones Suaves y Barras de Separación)
 st.markdown("""
     <style>
     /* Fondo azul claro original */
     .stApp { background-color: #EBF8FF; }
     
-    /* Contenedor principal: Centra todo el contenido */
+    /* Centrado absoluto del bloque principal */
     .main .block-container {
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         text-align: center; max-width: 800px;
     }
 
-    .main-title { font-size: 45px; font-weight: 800; color: #1E3A8A; margin-bottom: 20px; width: 100%; text-align: center; }
+    .main-title { font-size: 45px; font-weight: 800; color: #1E3A8A; margin-bottom: 20px; width: 100%; }
     
-    /* Caja de pregunta centrada */
+    /* Caja de pregunta */
     .question-container { 
         margin: 20px auto; width: 100%; max-width: 650px;
         min-height: 100px; display: flex; align-items: center; justify-content: center;
     }
-    .question-text { font-size: 26px !important; font-weight: 700; color: #1E3A8A; line-height: 1.3; text-align: center; width: 100%; }
+    .question-text { font-size: 26px !important; font-weight: 700; color: #1E3A8A; line-height: 1.3; }
     
-    /* Nota de aviso 1ª pregunta */
     .warning-box { 
         background-color: #FFFBEB; border: 1px solid #F59E0B; border-radius: 15px;
         padding: 20px; margin: 10px auto 25px auto; max-width: 600px;
         color: #92400E; text-align: center; font-weight: 600; font-size: 16px;
     }
 
-    /* Burbuja de Ideología Final Centrada */
-    .result-bubble {
-        background-color: white; border-radius: 25px; padding: 40px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 2px solid #BFDBFE;
-        text-align: center; margin: 20px auto; width: 100%; max-width: 600px;
-    }
-    .ideology-title { font-size: 36px !important; font-weight: 900; color: #2563EB; text-transform: uppercase; margin: 0; }
-    .ideology-desc { font-size: 18px; color: #475569; margin-top: 15px; line-height: 1.5; }
-
-    /* BOTONES: Azules, bordes redondeados (no afilados), misma longitud y centrados */
+    /* BOTONES: Redondeados, azules y con la barra gris debajo de cada uno */
     div.stButton > button {
         width: 100% !important; 
         max-width: 600px !important; 
         height: 58px !important;
-        border-radius: 15px !important; /* Bordes redondeados suaves */
+        border-radius: 15px !important; 
         font-size: 18px !important;
         background-color: #DBEAFE !important; 
         color: #1E40AF !important;
         border: 1px solid #BFDBFE !important;
-        border-bottom: 3px solid #BFDBFE !important; /* Relieve suave */
-        margin: 8px auto !important;
+        /* La barra gris ligera que pediste entre botones */
+        border-bottom: 4px solid #CBD5E1 !important; 
+        margin: 10px auto !important;
         display: block !important;
         font-weight: 600;
         transition: 0.2s;
@@ -62,13 +53,21 @@ st.markdown("""
         transform: scale(1.01); 
     }
 
-    /* Área de botones de acción (PDF, Volver, Repetir) */
-    .action-area { width: 100%; max-width: 600px; margin: 20px auto; }
+    /* Separador gris específico para antes del botón "Volver" */
+    .separator {
+        width: 100%; max-width: 600px;
+        border-top: 2px solid #CBD5E1;
+        margin: 25px auto;
+    }
+
+    .result-bubble {
+        background-color: white; border-radius: 25px; padding: 40px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 2px solid #BFDBFE;
+        text-align: center; margin: 20px auto; width: 100%; max-width: 600px;
+    }
+    .ideology-title { font-size: 36px !important; font-weight: 900; color: #2563EB; text-transform: uppercase; margin: 0; }
     
-    /* Barra de progreso */
     .stProgress { max-width: 600px; margin: 0 auto; }
-    
-    /* Gráfico iframe */
     iframe { display: block; margin: 0 auto; border-radius: 15px; background: white; }
     </style>
     """, unsafe_allow_html=True)
@@ -244,7 +243,7 @@ if st.session_state.idx >= len(questions):
 
     st.markdown(f'<div class="result-bubble"><p class="ideology-title">{id_nom}</p><p class="ideology-desc">{desc}</p></div>', unsafe_allow_html=True)
 
-    # GRÁFICO (TÚ centrado debajo del punto)
+    # GRÁFICO
     leaders_html = "".join([f"""
         <div style="position:absolute; width:8px; height:8px; background:{l['c']}; border-radius:50%; left:{50 + (l['x']*4.5)}%; top:{50 - (l['y']*4.5)}%; transform:translate(-50%,-50%); border:1px solid #000; z-index:2;"></div>
         <div style="position:absolute; font-size:9px; font-weight:bold; left:{50 + (l['x']*4.5)}%; top:{50 - (l['y']*4.5)}%; transform:translate(-50%, 6px); color:#334155; z-index:2; white-space:nowrap;">{l['n']}</div>
@@ -285,25 +284,24 @@ if st.session_state.idx >= len(questions):
 else:
     st.markdown('<div class="main-title">Compás Político</div>', unsafe_allow_html=True)
     
-    # Mensaje de la 1ª pregunta
     if st.session_state.idx == 0:
         st.markdown('<div class="warning-box">⚠️ Si no sabes lo que significa la pregunta, pon <b>Neutral / No lo sé</b>.</div>', unsafe_allow_html=True)
     
     st.progress(st.session_state.idx / len(questions))
     st.write(f"<p style='text-align:center; color:#64748B; font-weight:bold;'>Pregunta {st.session_state.idx + 1} de {len(questions)}</p>", unsafe_allow_html=True)
     
-    # Pregunta centrada
     st.markdown(f'<div class="question-container"><span class="question-text">{questions[st.session_state.idx]["t"]}</span></div>', unsafe_allow_html=True)
     
-    # Respuestas: Azules, centradas y con bordes suaves
+    # Botones de respuesta con la barra gris (border-bottom) definida en el CSS
     st.button("✅ Totalmente de acuerdo", on_click=responder, args=(2,))
     st.button("👍 De acuerdo", on_click=responder, args=(1,))
     st.button("😐 Neutral / No lo sé", on_click=responder, args=(0,))
     st.button("👎 En desacuerdo", on_click=responder, args=(-1,))
     st.button("❌ Totalmente en desacuerdo", on_click=responder, args=(-2,))
 
-    # Botón Volver centrado y redondeado
+    # Botón Volver con separador visual
     if st.session_state.idx > 0:
+        st.markdown('<div class="separator"></div>', unsafe_allow_html=True)
         st.markdown('<div class="action-area">', unsafe_allow_html=True)
         if st.button("⬅️ VOLVER A LA PREGUNTA ANTERIOR"):
             px, py = st.session_state.hist.pop()
