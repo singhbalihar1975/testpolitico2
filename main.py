@@ -4,63 +4,69 @@ import streamlit.components.v1 as components
 # 1. CONFIGURACIÓN DE PÁGINA
 st.set_page_config(page_title="Compás Político", layout="centered")
 
-# 2. ESTILOS CSS (Centrado absoluto y diseño de botones)
+# 2. ESTILOS CSS (Centrado absoluto y correcciones visuales)
 st.markdown("""
     <style>
+    /* Fondo y fuentes */
     .stApp { background-color: #F8FAFC; }
     
-    /* Centrado de contenedores principales */
-    .main-container { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-    .main-title { text-align: center; font-size: 45px; font-weight: 800; color: #1E3A8A; margin-bottom: 20px; width: 100%; }
+    /* Forzar centrado de todos los bloques de Streamlit */
+    .block-container { 
+        display: flex; flex-direction: column; align-items: center; justify-content: center; 
+    }
+
+    .main-title { text-align: center; font-size: 48px; font-weight: 800; color: #1E3A8A; margin-bottom: 20px; width: 100%; }
     
-    /* Caja de pregunta centrada */
-    .question-container { text-align: center; margin: 40px auto; max-width: 800px; width: 100%; }
-    .question-text { font-size: 28px !important; font-weight: 700; color: #1E3A8A; line-height: 1.3; min-height: 110px; display: block; }
+    /* Caja de pregunta con centrado de texto */
+    .question-container { 
+        text-align: center; margin: 30px auto; max-width: 800px; width: 100%; 
+        display: flex; justify-content: center; align-items: center; min-height: 120px;
+    }
+    .question-text { font-size: 28px !important; font-weight: 700; color: #1E3A8A; line-height: 1.4; text-align: center; }
     
     /* Nota de aviso centrada */
     .warning-box { 
         background-color: #FFFBEB; border: 1px solid #F59E0B; border-radius: 12px;
         padding: 20px; margin: 0 auto 30px auto; max-width: 600px;
-        color: #92400E; text-align: center; font-weight: 600; font-size: 17px;
+        color: #92400E; text-align: center; font-weight: 600; font-size: 17px; width: 100%;
     }
 
     /* Burbuja de Ideología centrada */
     .result-bubble {
         background-color: white; border-radius: 25px; padding: 40px;
         box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 2px solid #E2E8F0;
-        text-align: center; margin: 0 auto 40px auto; max-width: 700px;
+        text-align: center; margin: 0 auto 40px auto; max-width: 700px; width: 100%;
     }
     .ideology-title { font-size: 38px !important; font-weight: 900; color: #2563EB; text-transform: uppercase; margin: 0; }
     .ideology-desc { font-size: 18px; color: #475569; margin-top: 15px; line-height: 1.6; }
 
-    /* Botones de respuesta: Ancho fijo y centrado */
+    /* Botones de respuesta: Centrado absoluto y tamaño uniforme */
     div.stButton > button {
-        width: 100% !important; max-width: 600px !important; height: 60px !important;
-        border-radius: 12px !important; font-size: 18px !important;
+        width: 100% !important; max-width: 600px !important; height: 62px !important;
+        border-radius: 12px !important; font-size: 19px !important;
         background-color: #DBEAFE !important; color: #1E40AF !important;
         border: 2px solid #BFDBFE !important; margin: 12px auto !important;
         display: block !important; transition: 0.2s ease; font-weight: 600;
     }
-    div.stButton > button:hover { background-color: #BFDBFE !important; border-color: #3B82F6 !important; transform: translateY(-1px); }
+    div.stButton > button:hover { background-color: #BFDBFE !important; border-color: #3B82F6 !important; transform: scale(1.01); }
 
     /* Centrado de barra de progreso */
-    .stProgress > div > div > div > div { background-color: #3B82F6; }
+    .stProgress { width: 100% !important; max-width: 600px; margin: 0 auto; }
     
     /* Botón volver */
-    .back-btn-container { display: flex; justify-content: center; width: 100%; margin-top: 40px; }
+    .back-btn-container { display: flex; justify-content: center; width: 100%; margin-top: 30px; }
     .back-btn-container div.stButton > button { 
         background-color: #F1F5F9 !important; color: #64748B !important; 
-        max-width: 300px !important; border: 1px solid #E2E8F0 !important; font-size: 15px !important;
+        max-width: 320px !important; border: 1px solid #E2E8F0 !important; font-size: 15px !important;
     }
     
     /* Centrado del Iframe del gráfico */
-    iframe { display: block; margin-left: auto; margin-right: auto; border-radius: 10px; }
+    iframe { display: block; margin: 0 auto; border-radius: 12px; }
     </style>
     """, unsafe_allow_html=True)
 
 # 3. BASE DE DATOS: 45 LÍDERES
 LEADERS = [
-    # Originales
     {"n": "Stalin", "x": -9, "y": 9, "c": "#C53030"}, {"n": "Hitler", "x": 8, "y": 9.5, "c": "#2D3748"},
     {"n": "Mao", "x": -9.5, "y": 8.5, "c": "#E53E3E"}, {"n": "Gandhi", "x": -6.5, "y": -7.5, "c": "#48BB78"},
     {"n": "Thatcher", "x": 7.5, "y": 6.5, "c": "#3182CE"}, {"n": "Milei", "x": 9.2, "y": -8.8, "c": "#D69E2E"},
@@ -68,28 +74,27 @@ LEADERS = [
     {"n": "Sanders", "x": -5.5, "y": -2, "c": "#4299E1"}, {"n": "Pinochet", "x": 8.8, "y": 8, "c": "#1A202C"},
     {"n": "Chomsky", "x": -8.5, "y": -8.5, "c": "#38A169"}, {"n": "Rothbard", "x": 10, "y": -10, "c": "#F6E05E"},
     {"n": "Obama", "x": 2.5, "y": 1.5, "c": "#2B6CB0"}, {"n": "Mandela", "x": -3, "y": -3, "c": "#48BB78"},
-    {"n": "Churchill", "x": 6, "y": 5, "c": "#2C5282"},
-    # 30 Nuevos Líderes
-    {"n": "Lenin", "x": -8.5, "y": 8, "c": "#C53030"}, {"n": "Trump", "x": 6.5, "y": 5.5, "c": "#E53E3E"},
-    {"n": "Biden", "x": 3, "y": 2, "c": "#3182CE"}, {"n": "Merkel", "x": 2.5, "y": 3, "c": "#4A5568"},
-    {"n": "Bukele", "x": 5, "y": 7, "c": "#2D3748"}, {"n": "Putin", "x": 7, "y": 8.5, "c": "#2B6CB0"},
-    {"n": "Sánchez", "x": -2.5, "y": 1, "c": "#F56565"}, {"n": "Abascal", "x": 7.5, "y": 7.5, "c": "#38A169"},
-    {"n": "Díaz", "x": -6, "y": -2, "c": "#ED64A6"}, {"n": "Bolsonaro", "x": 8, "y": 6.5, "c": "#48BB78"},
-    {"n": "Lula", "x": -4.5, "y": 1.5, "c": "#E53E3E"}, {"n": "Jefferson", "x": 4, "y": -7.5, "c": "#D69E2E"},
-    {"n": "Robespierre", "x": -4, "y": 9, "c": "#C53030"}, {"n": "Mussolini", "x": 7.5, "y": 9.5, "c": "#1A202C"},
-    {"n": "Keynes", "x": -3, "y": 2, "c": "#63B3ED"}, {"n": "Hayek", "x": 9, "y": -7, "c": "#F6E05E"},
-    {"n": "Che Guevara", "x": -9, "y": 6, "c": "#2F855A"}, {"n": "Franco", "x": 7, "y": 9, "c": "#2D3748"},
-    {"n": "Kropotkin", "x": -10, "y": -10, "c": "#000000"}, {"n": "Malatesta", "x": -9, "y": -9.5, "c": "#4A5568"},
-    {"n": "Rousseau", "x": -5, "y": 4, "c": "#4299E1"}, {"n": "Voltaire", "x": 5, "y": -3, "c": "#ECC94B"},
-    {"n": "Locke", "x": 6, "y": -5, "c": "#3182CE"}, {"n": "Rand", "x": 9.5, "y": -8, "c": "#718096"},
-    {"n": "Gaddafi", "x": -2, "y": 8, "c": "#38A169"}, {"n": "Kim Jong-un", "x": -9.5, "y": 10, "c": "#E53E3E"},
-    {"n": "Macron", "x": 4, "y": 3, "c": "#3182CE"}, {"n": "Trudeau", "x": -1.5, "y": -1.5, "c": "#ED64A6"},
-    {"n": "Meloni", "x": 7, "y": 6, "c": "#2C5282"}, {"n": "Mujica", "x": -7, "y": -4, "c": "#48BB78"}
+    {"n": "Churchill", "x": 6, "y": 5, "c": "#2C5282"}, {"n": "Lenin", "x": -8.5, "y": 8, "c": "#C53030"}, 
+    {"n": "Trump", "x": 6.5, "y": 5.5, "c": "#E53E3E"}, {"n": "Biden", "x": 3, "y": 2, "c": "#3182CE"}, 
+    {"n": "Merkel", "x": 2.5, "y": 3, "c": "#4A5568"}, {"n": "Bukele", "x": 5, "y": 7, "c": "#2D3748"}, 
+    {"n": "Putin", "x": 7, "y": 8.5, "c": "#2B6CB0"}, {"n": "Sánchez", "x": -2.5, "y": 1, "c": "#F56565"}, 
+    {"n": "Abascal", "x": 7.5, "y": 7.5, "c": "#38A169"}, {"n": "Díaz", "x": -6, "y": -2, "c": "#ED64A6"}, 
+    {"n": "Bolsonaro", "x": 8, "y": 6.5, "c": "#48BB78"}, {"n": "Lula", "x": -4.5, "y": 1.5, "c": "#E53E3E"}, 
+    {"n": "Jefferson", "x": 4, "y": -7.5, "c": "#D69E2E"}, {"n": "Robespierre", "x": -4, "y": 9, "c": "#C53030"}, 
+    {"n": "Mussolini", "x": 7.5, "y": 9.5, "c": "#1A202C"}, {"n": "Keynes", "x": -3, "y": 2, "c": "#63B3ED"}, 
+    {"n": "Hayek", "x": 9, "y": -7, "c": "#F6E05E"}, {"n": "Che Guevara", "x": -9, "y": 6, "c": "#2F855A"}, 
+    {"n": "Franco", "x": 7, "y": 9, "c": "#2D3748"}, {"n": "Kropotkin", "x": -10, "y": -10, "c": "#000000"}, 
+    {"n": "Malatesta", "x": -9, "y": -9.5, "c": "#4A5568"}, {"n": "Rousseau", "x": -5, "y": 4, "c": "#4299E1"}, 
+    {"n": "Voltaire", "x": 5, "y": -3, "c": "#ECC94B"}, {"n": "Locke", "x": 6, "y": -5, "c": "#3182CE"}, 
+    {"n": "Rand", "x": 9.5, "y": -8, "c": "#718096"}, {"n": "Gaddafi", "x": -2, "y": 8, "c": "#38A169"}, 
+    {"n": "Kim Jong-un", "x": -9.5, "y": 10, "c": "#E53E3E"}, {"n": "Macron", "x": 4, "y": 3, "c": "#3182CE"}, 
+    {"n": "Trudeau", "x": -1.5, "y": -1.5, "c": "#ED64A6"}, {"n": "Meloni", "x": 7, "y": 6, "c": "#2C5282"}, 
+    {"n": "Mujica", "x": -7, "y": -4, "c": "#48BB78"}
 ]
 
 # 4. LAS 85 PREGUNTAS
 questions = [
-    # ECONÓMICAS (X)
+    # ECONÓMICAS
     {"t": "El gobierno no debería decir a las empresas cuánto pagar a sus empleados.", "a": "x", "v": 1},
     {"t": "La sanidad debería ser gratis y pagada con los impuestos de todos.", "a": "x", "v": -1},
     {"t": "El Estado debería ser el dueño de las empresas de luz y agua.", "a": "x", "v": -1},
@@ -133,7 +138,7 @@ questions = [
     {"t": "Vender órganos debería ser legal si hay acuerdo entre personas.", "a": "x", "v": 1},
     {"t": "El Estado gasta demasiado en políticos y burocracia.", "a": "x", "v": 1},
     {"t": "Tener mucha riqueza acumulada debería ser ilegal.", "a": "x", "v": -1},
-    # SOCIALES (Y)
+    # SOCIALES
     {"t": "La disciplina y la obediencia son lo más importante en la educación.", "a": "y", "v": 1},
     {"t": "La libertad de expresión debe ser total, aunque alguien se ofenda.", "a": "y", "v": -1},
     {"t": "Hace falta mucha más policía en las calles.", "a": "y", "v": 1},
@@ -141,7 +146,7 @@ questions = [
     {"t": "Un país necesita un líder fuerte que tome decisiones rápidas.", "a": "y", "v": 1},
     {"t": "La religión no tiene sitio en la política moderna.", "a": "y", "v": -1},
     {"t": "Gastar más dinero en el ejército es necesario.", "a": "y", "v": 1},
-    {"t": "Ayudar a morir a un enfermo terminal (eutanasia) debe ser legal.", "a": "y", "v": -1},
+    {"t": "Ayudar a morir a un enfermo terminal debe ser legal.", "a": "y", "v": -1},
     {"t": "El gobierno debería controlar lo que se publica en internet.", "a": "y", "v": 1},
     {"t": "Lo que haga un adulto en su casa no es asunto del Estado.", "a": "y", "v": -1},
     {"t": "Nuestra cultura nacional es superior a otras.", "a": "y", "v": 1},
@@ -174,7 +179,7 @@ questions = [
     {"t": "El gobierno debe premiar a quienes tengan muchos hijos.", "a": "y", "v": 1},
     {"t": "Las redes sociales nos están volviendo maleducados.", "a": "y", "v": 1},
     {"t": "Tener un arma en casa para defensa debería ser un derecho.", "a": "y", "v": -1},
-    {"t": "Los antepasados y la historia patria son sagrados.", "a": "y", "v": 1},
+    {"t": "Los antepasados y la patria son sagrados.", "a": "y", "v": 1},
     {"t": "Un buen ciudadano siempre obedece la ley sin preguntar.", "a": "y", "v": 1}
 ]
 
@@ -196,7 +201,7 @@ if st.session_state.idx >= len(questions):
     st.markdown('<div class="main-title">Compás Político</div>', unsafe_allow_html=True)
     x, y = st.session_state.x, st.session_state.y
 
-    # Lógica de 30 Ideologías
+    # Lógica de Ideologías
     if y > 6:
         if x < -6: id_nom, desc = "Marxismo-Leninismo", "Abolición del capitalismo mediante un Estado centralizado y poderoso."
         elif x > 6: id_nom, desc = "Fascismo / Nacionalismo", "Estado totalitario con economía dirigida y enfoque nacionalista."
@@ -231,7 +236,7 @@ if st.session_state.idx >= len(questions):
 
     st.markdown(f'<div class="result-bubble"><p class="ideology-title">{id_nom}</p><p class="ideology-desc">{desc}</p></div>', unsafe_allow_html=True)
 
-    # GRÁFICO (600px)
+    # GRÁFICO (600px con "TÚ" debajo del punto)
     leaders_html = "".join([f"""
         <div style="position:absolute; width:8px; height:8px; background:{l['c']}; border-radius:50%; left:{50 + (l['x']*4.5)}%; top:{50 - (l['y']*4.5)}%; transform:translate(-50%,-50%); border:1px solid #000; z-index:2;"></div>
         <div style="position:absolute; font-size:9px; font-weight:bold; left:{50 + (l['x']*4.5)}%; top:{50 - (l['y']*4.5)}%; transform:translate(-50%, 6px); color:#334155; z-index:2; white-space:nowrap;">{l['n']}</div>
@@ -241,7 +246,7 @@ if st.session_state.idx >= len(questions):
     user_y = max(2, min(98, 50 - (y * 4.5)))
 
     compass_code = f"""
-    <div style="position:relative; width:600px; height:600px; margin:auto; background:white; border:3px solid #1e293b; overflow:hidden; font-family:sans-serif;">
+    <div style="position:relative; width:600px; height:600px; margin:auto; background:white; border:3px solid #1e293b; overflow:hidden; font-family:sans-serif; border-radius:10px;">
         <div style="position:absolute; width:50%; height:50%; top:0; left:0; background:rgba(239,68,68,0.15);"></div>
         <div style="position:absolute; width:50%; height:50%; top:0; right:0; background:rgba(59,130,246,0.15);"></div>
         <div style="position:absolute; width:50%; height:50%; bottom:0; left:0; background:rgba(34,197,94,0.15);"></div>
@@ -254,12 +259,12 @@ if st.session_state.idx >= len(questions):
         <div style="position:absolute; top:48%; right:8px; font-weight:900; font-size:14px;">DERECHA</div>
         {leaders_html}
         <div style="position:absolute; width:14px; height:14px; background:red; border:2px solid white; border-radius:50%; left:{user_x}%; top:{user_y}%; transform:translate(-50%,-50%); z-index:10; box-shadow:0 0 10px red;"></div>
-        <div style="position:absolute; color:red; font-weight:900; font-size:15px; left:{user_x}%; top:{user_y}%; transform:translate(-50%, -24px); z-index:11; font-family:sans-serif; text-shadow:1px 1px white;">TÚ</div>
+        <div style="position:absolute; color:red; font-weight:900; font-size:16px; left:{user_x}%; top:{user_y}%; transform:translate(-50%, 12px); z-index:11; font-family:sans-serif; text-shadow:1px 1px white;">TÚ</div>
     </div>
     """
     components.html(compass_code, height=640)
 
-    st.markdown('<div style="display:flex; flex-direction:column; align-items:center; margin-top:20px;">', unsafe_allow_html=True)
+    st.markdown('<div style="display:flex; flex-direction:column; align-items:center; margin-top:20px; width:100%;">', unsafe_allow_html=True)
     if st.button("🖨️ IMPRIMIR / GUARDAR RESULTADO"):
         components.html("<script>window.print();</script>", height=0)
     if st.button("🔄 REPETIR TEST"):
@@ -275,7 +280,7 @@ else:
         st.markdown('<div class="warning-box">⚠️ Si no sabes lo que significa la pregunta, pon <b>Neutral / No lo sé</b>.</div>', unsafe_allow_html=True)
     
     st.progress(st.session_state.idx / len(questions))
-    st.write(f"<p style='text-align:center; color:#64748B;'>Pregunta {st.session_state.idx + 1} de {len(questions)}</p>", unsafe_allow_html=True)
+    st.write(f"<p style='text-align:center; color:#64748B; font-weight:bold;'>Pregunta {st.session_state.idx + 1} de {len(questions)}</p>", unsafe_allow_html=True)
     
     # Pregunta centrada
     st.markdown(f'<div class="question-container"><span class="question-text">{questions[st.session_state.idx]["t"]}</span></div>', unsafe_allow_html=True)
