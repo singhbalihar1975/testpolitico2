@@ -1,12 +1,12 @@
 import streamlit as st
 import base64
 
-# 1. CONFIGURACIÓN Y CSS RADICAL PARA CENTRADO Y COLORES
+# 1. CONFIGURACIÓN Y CSS REVISADO
 st.set_page_config(page_title="Brújula Política Estudiantil", layout="centered")
 
 st.markdown("""
     <style>
-    /* Fondo Azul Claro */
+    /* Fondo Azul Muy Claro */
     .stApp { background-color: #E3F2FD; }
     
     /* PREGUNTAS GIGANTES */
@@ -19,48 +19,49 @@ st.markdown("""
         line-height: 1.1;
     }
 
-    /* FORZAR QUE CADA BOTÓN OCUPE SU LÍNEA Y ESTÉ CENTRADO */
+    /* ALINEACIÓN LIGERAMENTE A LA IZQUIERDA */
     div.stButton {
         display: flex;
-        justify-content: center;
+        justify-content: flex-start; /* Movidos a la izquierda */
+        padding-left: 10%; /* Ajuste fino de posición */
         width: 100%;
     }
 
     div.stButton > button {
-        width: 600px !important; /* Ancho fijo para todos */
-        height: 70px !important;
-        border-radius: 35px !important;
-        font-size: 20px !important;
+        width: 550px !important; 
+        height: 65px !important;
+        border-radius: 15px !important;
+        font-size: 19px !important;
         font-weight: bold !important;
         border: none !important;
-        margin: 5px auto !important; /* Centrado automático */
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+        margin: 5px 0px !important;
+        /* COLOR AZUL CLARO SOLICITADO */
+        background-color: #BBDEFB !important;
+        color: #0D47A1 !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05) !important;
         transition: 0.3s;
     }
 
-    /* COLORES ASIGNADOS POR ORDEN DE APARICIÓN (Equivale a las respuestas) */
-    /* 1. Totalmente de acuerdo - Verde Oscuro */
-    div.stButton:nth-of-type(1) > button { background-color: #1B5E20 !important; color: white !important; }
-    /* 2. De acuerdo - Verde Claro */
-    div.stButton:nth-of-type(2) > button { background-color: #81C784 !important; color: #052b08 !important; }
-    /* 3. Neutral - Blanco */
-    div.stButton:nth-of-type(3) > button { background-color: #FFFFFF !important; color: #1565C0 !important; border: 2px solid #BBDEFB !important; }
-    /* 4. En desacuerdo - Rojo Claro */
-    div.stButton:nth-of-type(4) > button { background-color: #EF9A9A !important; color: #7f0000 !important; }
-    /* 5. Totalmente en desacuerdo - Rojo Oscuro */
-    div.stButton:nth-of-type(5) > button { background-color: #B71C1C !important; color: white !important; }
-
-    /* Botón Volver - Gris azulado */
-    div.stButton:nth-of-type(6) > button { 
-        background-color: #546E7A !important; 
-        color: white !important; 
-        width: 300px !important;
-        margin-top: 40px !important;
-        font-size: 16px !important;
+    /* EFECTO HOVER PARA LOS BOTONES AZULES */
+    div.stButton > button:hover { 
+        background-color: #90CAF9 !important;
+        transform: translateX(5px); /* Pequeño desplazamiento al pasar el ratón */
     }
 
-    /* EFECTO HOVER */
-    div.stButton > button:hover { transform: scale(1.02); filter: brightness(1.1); }
+    /* BOTONES FINALES (NEGROS Y GRANDES) */
+    .final-section div.stButton {
+        justify-content: center !important;
+        padding-left: 0 !important;
+    }
+    
+    .final-section div.stButton > button {
+        background-color: #000000 !important;
+        color: #FFFFFF !important;
+        width: 100% !important;
+        height: 75px !important;
+        font-size: 22px !important;
+        border-radius: 10px !important;
+    }
 
     /* TARJETA DE RESULTADOS */
     .result-card {
@@ -71,11 +72,12 @@ st.markdown("""
     .result-title { font-size: 50px; font-weight: 900; color: #0D47A1; }
     .result-desc { font-size: 24px; color: #37474F; }
 
-    /* MAPA Y LEYENDA */
+    /* MAPA */
     .map-container {
         position: relative; width: 450px; height: 450px; 
         margin: 30px auto; border: 10px solid white; border-radius: 20px;
         box-shadow: 0 15px 35px rgba(0,0,0,0.2); overflow: hidden;
+        background-color: white;
     }
     .dot { position: absolute; border-radius: 50%; border: 2px solid white; transform: translate(-50%, -50%); }
     .user-dot {
@@ -109,7 +111,7 @@ LEADERS = [
     {"n": "Castro", "x": -170, "y": 150, "c": "#2E7D32"}
 ]
 
-# 3. LISTADO COMPLETO DE 85 PREGUNTAS
+# 3. PREGUNTAS (85)
 questions = [
     {"t": "Cualquier persona debería poder abrir un negocio sin que el gobierno le ponga muchas reglas.", "a": "x", "v": 1},
     {"t": "Los hospitales deberían ser siempre gratis y pagados con nuestros impuestos.", "a": "x", "v": -1},
@@ -125,7 +127,7 @@ questions = [
     {"t": "Si las empresas compiten entre ellas, los servicios serán mejores.", "a": "x", "v": 1},
     {"t": "El gobierno debe asegurar que todo el mundo tenga un trabajo.", "a": "x", "v": -1},
     {"t": "Nadie tiene derecho a quitarle nada a una persona si es su propiedad privada.", "a": "x", "v": 1},
-    {"t": "Los bancos centrales (que fabrican el dinero) deberían desaparecer.", "a": "x", "v": 1},
+    {"t": "Los bancos centrales deberían desaparecer.", "a": "x", "v": 1},
     {"t": "El agua y la luz deberían estar siempre en manos del gobierno.", "a": "x", "v": -1},
     {"t": "Comprar y vender cosas con todo el mundo ayuda a que haya menos pobreza.", "a": "x", "v": 1},
     {"t": "Debería estar prohibido ganar dinero solo apostando en la bolsa.", "a": "x", "v": -1},
@@ -154,94 +156,101 @@ questions = [
     {"t": "Si alguien muy enfermo quiere morir, el médico debería poder ayudarle.", "a": "y", "v": -1},
     {"t": "Todos los jóvenes deberían hacer el servicio militar obligatorio.", "a": "y", "v": 1},
     {"t": "La familia tradicional es la mejor base para la sociedad.", "a": "y", "v": 1},
-    {"t": "Ver películas para adultos (porno) debería estar prohibido por ley.", "a": "y", "v": 1},
+    {"t": "Ver películas para adultos debería estar prohibido por ley.", "a": "y", "v": 1},
     {"t": "Nadie debería prohibir una obra de arte, aunque sea ofensiva.", "a": "y", "v": -1},
     {"t": "La pena de muerte está bien para los peores criminales.", "a": "y", "v": 1},
     {"t": "Que venga mucha gente de fuera hace que nuestra cultura se pierda.", "a": "y", "v": 1},
     {"t": "El matrimonio solo debería ser entre un hombre y una mujer.", "a": "y", "v": 1},
     {"t": "Debería estar prohibido cortar calles para hacer manifestaciones.", "a": "y", "v": 1},
-    {"t": "Uno no nace hombre o mujer, sino que elige lo que quiere ser.", "a": "y", "v": -1},
-    {"t": "La monarquía (reyes) es algo antiguo que ya no debería existir.", "a": "y", "v": -1},
-    {"t": "La policía necesita mucho más poder del que tiene ahora.", "a": "y", "v": 1},
-    {"t": "Aprender sobre sexo en el colegio es fundamental para los niños.", "a": "y", "v": -1},
+    {"t": "Uno elige lo que quiere ser, no nace con ello.", "a": "y", "v": -1},
+    {"t": "La monarquía ya no debería existir.", "a": "y", "v": -1},
+    {"t": "La policía necesita mucho más poder.", "a": "y", "v": 1},
+    {"t": "Aprender sobre sexo en el colegio es fundamental.", "a": "y", "v": -1},
     {"t": "Insultar a la religión no debería ser un delito.", "a": "y", "v": -1},
     {"t": "La bandera de nuestro país es algo sagrado.", "a": "y", "v": 1},
-    {"t": "Los científicos deberían poder clonar humanos para curar enfermedades.", "a": "y", "v": -1},
-    {"t": "Hoy en día hay demasiada piel fina; se puede decir muy poco sin ofender.", "a": "y", "v": 1},
-    {"t": "Mezclar muchas culturas en el mismo barrio no funciona bien.", "a": "y", "v": 1},
-    {"t": "Es necesario probar medicinas con animales para salvar humanos.", "a": "y", "v": 1},
-    {"t": "El gobierno debería pagar dinero a las familias por tener hijos.", "a": "y", "v": 1},
-    {"t": "Bajarse películas sin pagar no es un crimen de verdad.", "a": "y", "v": -1},
-    {"t": "En el colegio debería haber mucha más disciplina y respeto.", "a": "y", "v": 1},
-    {"t": "El gobierno debe controlar la IA antes de que sea tarde.", "a": "y", "v": 1},
-    {"t": "La energía nuclear es la mejor solución para el clima.", "a": "x", "v": 1},
-    {"t": "Los animales deberían tener los mismos derechos que las personas.", "a": "y", "v": -1},
-    {"t": "Llegar al espacio deberían hacerlo empresas privadas.", "a": "x", "v": 1},
-    {"t": "Dar dinero público para el cine o el teatro es malgastar impuestos.", "a": "x", "v": 1},
-    {"t": "La globalización está destruyendo nuestras costumbres locales.", "a": "y", "v": 1},
-    {"t": "El capitalismo está rompiendo el planeta.", "a": "x", "v": -1},
-    {"t": "Deberíamos poder votar todas las leyes por internet.", "a": "y", "v": -1},
-    {"t": "La cárcel debe ser un castigo duro, no un sitio para aprender.", "a": "y", "v": 1},
-    {"t": "Si eres rico es porque te has esforzado más.", "a": "x", "v": 1},
-    {"t": "Internet debería ser gratis para todo el mundo.", "a": "x", "v": -1},
-    {"t": "Debería haber clases de religión obligatorias.", "a": "y", "v": 1},
-    {"t": "Nuestro ejército debería ir a otros países a ayudar si hay guerras.", "a": "y", "v": 1},
-    {"t": "Las criptomonedas son el futuro de la libertad.", "a": "x", "v": 1},
-    {"t": "Es justo que un jefe gane muchísimo más que un empleado.", "a": "x", "v": 1},
-    {"t": "El gobierno debería prohibir la comida basura.", "a": "y", "v": 1},
-    {"t": "Tener vecinos de muchas razas distintas fortalece al país.", "a": "y", "v": -1},
-    {"t": "Las huelgas generales solo sirven para perder tiempo.", "a": "x", "v": 1},
-    {"t": "La tecnología nos está haciendo menos humanos.", "a": "y", "v": 1},
-    {"t": "Los multimillonarios deberían dar casi todo su dinero al Estado.", "a": "x", "v": -1},
-    {"t": "Hay que prohibir pronto los coches de gasolina.", "a": "x", "v": -1},
-    {"t": "Sin una autoridad que ponga orden, la sociedad sería un caos.", "a": "y", "v": 1},
-    {"t": "Cualquier tiempo pasado fue mucho mejor.", "a": "y", "v": 1}
+    {"t": "Los científicos deberían poder clonar humanos.", "a": "y", "v": -1},
+    {"t": "Hay demasiada piel fina hoy en día.", "a": "y", "v": 1},
+    {"t": "Mezclar muchas culturas en el mismo barrio no funciona.", "a": "y", "v": 1},
+    {"t": "Es necesario probar medicinas con animales.", "a": "y", "v": 1},
+    {"t": "El gobierno debería pagar por tener hijos.", "a": "y", "v": 1},
+    {"t": "Bajarse películas no es un crimen.", "a": "y", "v": -1},
+    {"t": "Más disciplina en el colegio.", "a": "y", "v": 1},
+    {"t": "Controlar la IA es necesario.", "a": "y", "v": 1},
+    {"t": "Energía nuclear es la solución.", "a": "x", "v": 1},
+    {"t": "Animales con los mismos derechos.", "a": "y", "v": -1},
+    {"t": "El espacio debe ser privado.", "a": "x", "v": 1},
+    {"t": "El cine público es malgastar impuestos.", "a": "x", "v": 1},
+    {"t": "Globalización destruye costumbres.", "a": "y", "v": 1},
+    {"t": "El capitalismo rompe el planeta.", "a": "x", "v": -1},
+    {"t": "Votar por internet leyes.", "a": "y", "v": -1},
+    {"t": "Cárcel como castigo duro.", "a": "y", "v": 1},
+    {"t": "Ricos esforzados.", "a": "x", "v": 1},
+    {"t": "Internet gratis.", "a": "x", "v": -1},
+    {"t": "Religión obligatoria.", "a": "y", "v": 1},
+    {"t": "Ejército en guerras externas.", "a": "y", "v": 1},
+    {"t": "Criptos son libertad.", "a": "x", "v": 1},
+    {"t": "Jefes que ganan mucho es justo.", "a": "x", "v": 1},
+    {"t": "Prohibir comida basura.", "a": "y", "v": 1},
+    {"t": "Diversidad fortalece.", "a": "y", "v": -1},
+    {"t": "Huelgas pierden tiempo.", "a": "x", "v": 1},
+    {"t": "Tecnología nos hace menos humanos.", "a": "y", "v": 1},
+    {"t": "Multimillonarios deben pagar todo.", "a": "x", "v": -1},
+    {"t": "Prohibir gasolina.", "a": "x", "v": -1},
+    {"t": "Autoridad evita el caos.", "a": "y", "v": 1},
+    {"t": "Pasado mejor.", "a": "y", "v": 1}
 ]
 
 # --- FLUJO DE LA APP ---
 if st.session_state.idx >= len(questions):
     x, y = st.session_state.x, st.session_state.y
     
-    if x > 100 and y > 100: n, d = "DERECHA AUTORITARIA", "Orden social fuerte y libertad económica."
-    elif x < -100 and y > 100: n, d = "IZQUIERDA AUTORITARIA", "Estado fuerte que controla la economía."
-    elif x > 100 and y < -100: n, d = "LIBERALISMO RADICAL", "Libertad individual y mercado por encima de todo."
-    elif x < -100 and y < -100: n, d = "IZQUIERDA LIBERTARIA", "Comunidades libres sin jerarquías."
-    else: n, d = "CENTRO POLÍTICO", "Moderación y sentido común."
+    # 15 Ideologías detalladas
+    if y > 120:
+        if x > 120: n, d = "FASCISMO", "Estado totalitario, nacionalismo extremo y economía dirigida."
+        elif x < -120: n, d = "ESTALINISMO", "Centralización absoluta, colectivismo y control estatal."
+        else: n, d = "AUTORITARISMO", "Prioridad total al orden y la autoridad del Estado."
+    elif y < -120:
+        if x > 120: n, d = "ANARCOCAPITALISMO", "Soberanía individual total y mercado sin Estado."
+        elif x < -120: n, d = "ANARCOCOMUNISMO", "Sociedad sin clases ni Estado basada en la ayuda mutua."
+        else: n, d = "ANARQUISMO", "Rechazo a toda autoridad jerárquica."
+    else:
+        if x > 100: n, d = "NEOLIBERALISMO", "Libre mercado, privatización y Estado mínimo."
+        elif x < -100: n, d = "SOCIALDEMOCRACIA", "Justicia social mediante impuestos en un sistema capitalista."
+        else: n, d = "CENTRO", "Equilibrio moderado entre libertad y orden."
 
     st.markdown(f'<div class="result-card"><div class="result-title">{n}</div><div class="result-desc">{d}</div></div>', unsafe_allow_html=True)
 
-    def get_b64(f):
-        try:
-            with open(f, "rb") as b: return base64.b64encode(b.read()).decode()
-        except: return ""
-
-    img_data = get_b64("chart.png")
+    # Mapa Político
     l_html = "".join([f'<div class="dot" style="left:{50+(l["x"]*0.23)}%; top:{50-(l["y"]*0.23)}%; width:16px; height:16px; background:{l["c"]}; z-index:50;"></div>' for l in LEADERS])
-
     ux, uy = 50 + (x * 0.23), 50 - (y * 0.23)
     ux, uy = max(8, min(92, ux)), max(8, min(92, uy))
     
     st.markdown(f"""
         <div class="map-container">
-            <img src="data:image/png;base64,{img_data}" style="width:100%; height:100%;">
+            <div style="position:absolute; width:100%; height:2px; background:#ddd; top:50%;"></div>
+            <div style="position:absolute; width:2px; height:100%; background:#ddd; left:50%;"></div>
             {l_html}
             <div class="dot user-dot" style="left:{ux}%; top:{uy}%;">Tú</div>
         </div>
     """, unsafe_allow_html=True)
 
-    # Leyenda
-    l_items = "".join([f'<div style="display:flex; align-items:center; font-weight:bold; color:#0D47A1;"><div style="width:14px; height:14px; border-radius:50%; background:{l["c"]}; margin-right:8px;"></div>{l["n"]}</div>' for l in LEADERS])
-    st.markdown(f'<div style="background:white; padding:20px; border-radius:20px; display:flex; flex-wrap:wrap; justify-content:center; gap:20px; border:2px solid #BBDEFB;">{l_items}</div>', unsafe_allow_html=True)
-
+    # Sección Final
+    st.markdown('<div class="final-section">', unsafe_allow_html=True)
+    
+    # Botón Descargar (Lógica de texto)
+    resultado_texto = f"Resultado Brújula Política: {n}\nEje X (Econ): {x}\nEje Y (Soc): {y}"
+    st.download_button("💾 DESCARGAR RESULTADOS (.txt)", resultado_texto, file_name="mi_brujula.txt")
+    
     if st.button("🔄 REINICIAR TEST"):
         st.session_state.update({'idx':0, 'x':0, 'y':0, 'hist':[]})
         st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
 else:
     st.progress(st.session_state.idx / len(questions))
     st.markdown(f'<div class="question-text">{questions[st.session_state.idx]["t"]}</div>', unsafe_allow_html=True)
     
-    # Cada botón es una línea para asegurar centrado
+    # Botones con la nueva alineación y color azul claro
     st.button("Totalmente de acuerdo", on_click=responder, args=(2,))
     st.button("De acuerdo", on_click=responder, args=(1,))
     st.button("No estoy seguro / Neutral", on_click=responder, args=(0,))
