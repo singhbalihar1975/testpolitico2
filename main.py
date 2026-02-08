@@ -4,12 +4,12 @@ import streamlit.components.v1 as components
 # 1. CONFIGURACIÓN DE PÁGINA
 st.set_page_config(page_title="Compás Político Pro", layout="centered")
 
-# 2. ESTILOS CSS
+# 2. ESTILOS CSS (Centrado Total y Diseño)
 st.markdown("""
     <style>
     .stApp { background-color: #F0F8FF; }
     
-    /* Centrado de textos y títulos */
+    /* Títulos y textos centrados */
     .main-title { text-align: center; font-size: 40px; font-weight: 800; color: #1E3A8A; margin-bottom: 20px; }
     .question-text { text-align: center; font-size: 26px !important; font-weight: 700; color: #1E3A8A; margin: 40px 0px; min-height: 80px; }
     
@@ -25,42 +25,46 @@ st.markdown("""
         max-width: 600px;
     }
     .ideology-title { font-size: 48px !important; font-weight: 900; color: #2B6CB0; text-transform: uppercase; margin-bottom: 10px; }
-    .ideology-desc { font-size: 18px; color: #4A5568; line-height: 1.4; }
+    .ideology-desc { font-size: 18px; color: #4A5568; line-height: 1.4; margin-top: 10px; }
 
-    /* Botones de respuesta y navegación */
-    div.stButton { display: flex; justify-content: center; }
+    /* Botones Centrados (General) */
+    div.stButton { display: flex; justify-content: center; width: 100%; }
+    
+    /* Botones de respuesta */
     div.stButton > button {
-        width: 500px !important; height: 55px !important;
+        width: 550px !important; height: 55px !important;
         border-radius: 12px !important; font-size: 18px !important;
         background-color: #BEE3F8 !important; color: #2C5282 !important;
-        border: 1px solid #90CDF4 !important; margin: 5px 0px !important;
+        border: 1px solid #90CDF4 !important; margin: 5px auto !important;
         transition: 0.2s; font-weight: 600;
+        display: block;
     }
     div.stButton > button:hover { background-color: #90CDF4 !important; }
 
     /* Barra separadora gris */
-    .separator { border-top: 2px solid #CBD5E0; margin: 30px auto; width: 80%; }
+    .separator { border-top: 2px solid #CBD5E0; margin: 20px auto; width: 80%; }
+    .bubble-sep { border-top: 2px solid #CBD5E0; margin: 15px auto; width: 50%; }
 
-    /* Botón volver atrás */
-    .back-btn > div.stButton > button {
+    /* Botón volver atrás (específico) */
+    .back-container > div.stButton > button {
         background-color: white !important;
         color: #718096 !important;
-        width: 300px !important;
+        width: 350px !important;
         height: 45px !important;
         font-size: 15px !important;
     }
 
-    /* Botones finales */
-    .final-btns > div.stButton > button {
+    /* Botones finales (específico) */
+    .final-container > div.stButton > button {
         background-color: #2B6CB0 !important;
         color: white !important;
-        width: 400px !important;
+        width: 450px !important;
         margin-top: 10px !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. DATOS
+# 3. DATOS DE LÍDERES Y PREGUNTAS
 LEADERS = [
     {"n": "Stalin", "x": -9, "y": 9, "c": "red"},
     {"n": "Mao", "x": -9.5, "y": 8.5, "c": "red"},
@@ -165,7 +169,7 @@ questions = [
     {"t": "Un buen ciudadano siempre obedece la ley sin preguntar.", "a": "y", "v": 1}
 ]
 
-# 4. LÓGICA
+# 4. LÓGICA DE ESTADO
 if 'idx' not in st.session_state:
     st.session_state.update({'idx': 0, 'x': 0.0, 'y': 0.0, 'hist': []})
 
@@ -184,6 +188,7 @@ if st.session_state.idx >= len(questions):
     st.markdown('<div class="main-title">Tu Resultado Final</div>', unsafe_allow_html=True)
     x, y = st.session_state.x, st.session_state.y
 
+    # Lógica de Ideología
     if y > 2:
         if x > 2: id_nom, desc = "Derecha Conservadora", "Buscas mantener las tradiciones y el orden social con un sistema económico de mercado libre."
         elif x < -2: id_nom, desc = "Izquierda Autoritaria", "Crees en la igualdad económica impuesta por un Estado fuerte que dirija la sociedad."
@@ -200,11 +205,12 @@ if st.session_state.idx >= len(questions):
     st.markdown(f"""
         <div class="result-bubble">
             <div class="ideology-title">{id_nom}</div>
+            <div class="bubble-sep"></div>
             <div class="ideology-desc">{desc}</div>
         </div>
     """, unsafe_allow_html=True)
 
-    # Gráfico igual al de los archivos (con cuadrantes de colores)
+    # Gráfico de Cuadrantes
     leaders_js = "".join([f"""
         <div class="dot" style="left:{50 + (l['x']*4.5)}%; top:{50 - (l['y']*4.5)}%; background:{l['c']};"></div>
         <div class="label" style="left:{50 + (l['x']*4.5)}%; top:{50 - (l['y']*4.5)}%;">{l['n']}</div>
@@ -226,7 +232,11 @@ if st.session_state.idx >= len(questions):
         .user-txt {{ position: absolute; font-size: 14px; font-weight: 900; color: red; transform: translate(-50%, 12px); z-index: 11; }}
     </style>
     <div class="map">
-        <div class="quadrant" style="top:0; left:0; background: #ff7f7f;"></div> <div class="quadrant" style="top:0; right:0; background: #7f7fff;"></div> <div class="quadrant" style="bottom:0; left:0; background: #7fff7f;"></div> <div class="quadrant" style="bottom:0; right:0; background: #ffff7f;"></div> <div class="axis-h"></div><div class="axis-v"></div>
+        <div class="quadrant" style="top:0; left:0; background: #ff7f7f;"></div>
+        <div class="quadrant" style="top:0; right:0; background: #7f7fff;"></div>
+        <div class="quadrant" style="bottom:0; left:0; background: #7fff7f;"></div>
+        <div class="quadrant" style="bottom:0; right:0; background: #ffff7f;"></div>
+        <div class="axis-h"></div><div class="axis-v"></div>
         <div class="q-label" style="top:5px; left:42%;">AUTORITARIO</div>
         <div class="q-label" style="bottom:5px; left:43%;">LIBERTARIO</div>
         <div class="q-label" style="top:48%; left:5px;">IZQUIERDA</div>
@@ -238,7 +248,8 @@ if st.session_state.idx >= len(questions):
     """
     components.html(compass_html, height=480)
 
-    st.markdown('<div class="final-btns">', unsafe_allow_html=True)
+    # Botones finales centrados
+    st.markdown('<div class="final-container">', unsafe_allow_html=True)
     st.button("🖨️ IMPRIMIR / GUARDAR PDF", on_click=lambda: components.html("<script>window.print();</script>"))
     if st.button("🔄 REPETIR TEST"):
         st.session_state.update({'idx': 0, 'x': 0.0, 'y': 0.0, 'hist': []})
@@ -253,20 +264,21 @@ else:
     
     st.markdown(f'<div class="question-text">{questions[st.session_state.idx]["t"]}</div>', unsafe_allow_html=True)
     
-    # Botones de respuesta
+    # Respuestas centradas
     st.button("✅ Totalmente de acuerdo", on_click=responder, args=(2,))
     st.button("👍 De acuerdo", on_click=responder, args=(1,))
     st.button("😐 Neutral / No lo sé", on_click=responder, args=(0,))
     st.button("👎 En desacuerdo", on_click=responder, args=(-1,))
     st.button("❌ Totalmente en desacuerdo", on_click=responder, args=(-2,))
 
+    # Navegación inferior
+    st.markdown('<div class="separator"></div>', unsafe_allow_html=True)
+    st.markdown('<div class="back-container">', unsafe_allow_html=True)
     if st.session_state.idx > 0:
-        st.markdown('<div class="separator"></div>', unsafe_allow_html=True)
-        st.markdown('<div class="back-btn">', unsafe_allow_html=True)
         if st.button("⬅️ VOLVER A LA ANTERIOR"):
             px, py = st.session_state.hist.pop()
             st.session_state.x -= px
             st.session_state.y -= py
             st.session_state.idx -= 1
             st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
