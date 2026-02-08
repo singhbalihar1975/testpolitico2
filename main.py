@@ -4,71 +4,71 @@ import streamlit.components.v1 as components
 # 1. CONFIGURACIÓN DE PÁGINA
 st.set_page_config(page_title="Compás Político", layout="centered")
 
-# 2. ESTILOS CSS (Centrado Total, Botones Redondeados y Colores Originales)
+# 2. ESTILOS CSS PROFESIONALES (Centrado, Simetría y Divisores)
 st.markdown("""
     <style>
-    /* Fondo azul claro original */
     .stApp { background-color: #EBF8FF; }
     
-    /* Contenedor principal: Centra todo el contenido */
+    /* Centrado del contenedor principal */
     .main .block-container {
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        text-align: center; max-width: 800px;
+        max-width: 700px !important;
+        padding-top: 2rem !important;
+        margin: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
     }
 
-    .main-title { font-size: 45px; font-weight: 800; color: #1E3A8A; margin-bottom: 20px; width: 100%; text-align: center; }
+    .main-title { font-size: 45px; font-weight: 800; color: #1E3A8A; text-align: center; margin-bottom: 20px; }
     
-    /* Caja de pregunta centrada */
-    .question-container { 
-        margin: 20px auto; width: 100%; max-width: 650px;
-        min-height: 100px; display: flex; align-items: center; justify-content: center;
-    }
-    .question-text { font-size: 26px !important; font-weight: 700; color: #1E3A8A; line-height: 1.3; text-align: center; width: 100%; }
+    .question-container { width: 100%; min-height: 110px; display: flex; align-items: center; justify-content: center; margin: 15px 0; }
+    .question-text { font-size: 26px !important; font-weight: 700; color: #1E3A8A; text-align: center; line-height: 1.3; }
     
-    /* Nota de aviso 1ª pregunta */
     .warning-box { 
-        background-color: #FFFBEB; border: 1px solid #F59E0B; border-radius: 15px;
-        padding: 20px; margin: 10px auto 25px auto; max-width: 600px;
-        color: #92400E; text-align: center; font-weight: 600; font-size: 16px;
+        background-color: #FFFBEB; border: 1px solid #F59E0B; border-radius: 12px;
+        padding: 15px; margin-bottom: 25px; width: 100%; color: #92400E; text-align: center; font-weight: 600;
     }
 
-    /* Burbuja de Ideología Final Centrada */
-    .result-bubble {
-        background-color: white; border-radius: 25px; padding: 40px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 2px solid #BFDBFE;
-        text-align: center; margin: 20px auto; width: 100%; max-width: 600px;
-    }
-    .ideology-title { font-size: 36px !important; font-weight: 900; color: #2563EB; text-transform: uppercase; margin: 0; }
-    .ideology-desc { font-size: 18px; color: #475569; margin-top: 15px; line-height: 1.5; }
-
-    /* BOTONES: Azules, bordes redondeados (no afilados), misma longitud y centrados */
+    /* BOTONES DE RESPUESTA CON BARRA GRIS */
     div.stButton > button {
-        width: 100% !important; 
-        max-width: 600px !important; 
-        height: 58px !important;
-        border-radius: 15px !important; /* Bordes redondeados suaves */
-        font-size: 18px !important;
-        background-color: #DBEAFE !important; 
+        width: 100% !important;
+        max-width: 600px !important;
+        height: 60px !important;
+        margin: 0 auto !important;
+        background-color: transparent !important;
         color: #1E40AF !important;
-        border: 1px solid #BFDBFE !important;
-        border-bottom: 3px solid #BFDBFE !important; /* Relieve suave */
-        margin: 8px auto !important;
-        display: block !important;
-        font-weight: 600;
+        font-size: 19px !important;
+        font-weight: 500 !important;
+        border: none !important;
+        border-bottom: 1px solid #CBD5E1 !important; /* Barra gris ligera */
+        border-radius: 0px !important;
         transition: 0.2s;
     }
-    div.stButton > button:hover { 
-        background-color: #BFDBFE !important; 
-        transform: scale(1.01); 
+    
+    div.stButton > button:hover {
+        background-color: #DBEAFE !important;
+        border-bottom: 2px solid #1E40AF !important;
     }
 
-    /* Área de botones de acción (PDF, Volver, Repetir) */
-    .action-area { width: 100%; max-width: 600px; margin: 20px auto; }
+    /* BOTONES DE ACCIÓN (Centrados y redondeados) */
+    .action-btn-container { width: 100%; display: flex; flex-direction: column; align-items: center; margin-top: 20px; }
+    .action-btn-container div.stButton > button {
+        background-color: #DBEAFE !important;
+        border: 1px solid #BFDBFE !important;
+        border-radius: 12px !important;
+        margin: 10px 0 !important;
+        border-bottom: 3px solid #BFDBFE !important;
+    }
+
+    /* Burbuja de Resultado */
+    .result-bubble {
+        background-color: white; border-radius: 25px; padding: 35px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05); border: 2px solid #BFDBFE;
+        text-align: center; width: 100%; margin-bottom: 30px;
+    }
+    .ideology-title { font-size: 34px !important; font-weight: 900; color: #2563EB; margin: 0; }
     
-    /* Barra de progreso */
-    .stProgress { max-width: 600px; margin: 0 auto; }
-    
-    /* Gráfico iframe */
+    /* Gráfico */
     iframe { display: block; margin: 0 auto; border-radius: 15px; background: white; }
     </style>
     """, unsafe_allow_html=True)
@@ -102,7 +102,7 @@ LEADERS = [
 
 # 4. PREGUNTAS (85)
 questions = [
-    # ECONÓMICAS
+    # Económicas (x)
     {"t": "El gobierno no debería decir a las empresas cuánto pagar a sus empleados.", "a": "x", "v": 1},
     {"t": "La sanidad debería ser gratis y pagada con los impuestos de todos.", "a": "x", "v": -1},
     {"t": "El Estado debería ser el dueño de las empresas de luz y agua.", "a": "x", "v": -1},
@@ -146,7 +146,7 @@ questions = [
     {"t": "Vender órganos debería ser legal si hay acuerdo entre personas.", "a": "x", "v": 1},
     {"t": "El Estado gasta demasiado en políticos y burocracia.", "a": "x", "v": 1},
     {"t": "Tener mucha riqueza acumulada debería ser ilegal.", "a": "x", "v": -1},
-    # SOCIALES
+    # Sociales (y)
     {"t": "La disciplina y la obediencia son lo más importante en la educación.", "a": "y", "v": 1},
     {"t": "La libertad de expresión debe ser total, aunque alguien se ofenda.", "a": "y", "v": -1},
     {"t": "Hace falta mucha más policía en las calles.", "a": "y", "v": 1},
@@ -197,8 +197,7 @@ if 'idx' not in st.session_state:
 
 def responder(puntos):
     q = questions[st.session_state.idx]
-    total_eje = len([qu for qu in questions if qu["a"] == q["a"]])
-    val = (puntos / 2) * (10 / (total_eje / 2)) * q["v"]
+    val = (puntos / 2) * (10 / 21) * q["v"] # Normalización para 85 preguntas aprox
     if q["a"] == "x": st.session_state.x += val
     else: st.session_state.y += val
     st.session_state.hist.append((val if q["a"]=="x" else 0, val if q["a"]=="y" else 0))
@@ -211,71 +210,42 @@ if st.session_state.idx >= len(questions):
 
     # Lógica de Ideologías
     if y > 6:
-        if x < -6: id_nom, desc = "Marxismo-Leninismo", "Abolición del capitalismo mediante un Estado centralizado y poderoso."
-        elif x > 6: id_nom, desc = "Fascismo / Nacionalismo", "Estado totalitario con economía dirigida y enfoque nacionalista."
-        elif x < -2: id_nom, desc = "Socialismo Autoritario", "Igualdad económica mediante control gubernamental estricto."
-        elif x > 2: id_nom, desc = "Conservadurismo Autoritario", "Estado enfocado en la moral tradicional y el orden absoluto."
-        else: id_nom, desc = "Totalitarismo", "Control total del Estado sobre todos los aspectos de la vida."
+        if x < -6: id_nom, desc = "Marxismo-Leninismo", "Estado centralizado y abolición de la propiedad privada."
+        elif x > 6: id_nom, desc = "Fascismo / Nacionalismo", "Estado totalitario con economía nacionalista dirigida."
+        else: id_nom, desc = "Totalitarismo", "Control absoluto del Estado sobre la vida social y económica."
     elif y < -6:
-        if x < -6: id_nom, desc = "Anarco-Comunismo", "Sociedad sin clases ni Estado, basada en la cooperación voluntaria."
-        elif x > 6: id_nom, desc = "Anarco-Capitalismo", "Propiedad privada absoluta y eliminación total del gobierno."
-        elif x < -2: id_nom, desc = "Mutualismo", "Economía de mercado basada en cooperativas sin jerarquías."
-        elif x > 2: id_nom, desc = "Minarquismo", "El Estado solo existe para proteger la propiedad y la vida."
-        else: id_nom, desc = "Libertarismo Radical", "Oposición frontal a cualquier regulación estatal."
-    elif y > 2:
-        if x < -5: id_nom, desc = "Socialismo de Estado", "Gestión pública de recursos con regulaciones sociales firmes."
-        elif x > 5: id_nom, desc = "Derecha Conservadora", "Libre mercado y defensa de valores tradicionales."
-        elif x < -1: id_nom, desc = "Estatismo de Izquierda", "Prioridad al gasto público y control social moderado."
-        elif x > 1: id_nom, desc = "Democracia Cristiana", "Economía social de mercado con enfoque en familia y orden."
-        else: id_nom, desc = "Populismo", "Liderazgo fuerte que apela al pueblo contra las élites."
-    elif y < -2:
-        if x < -5: id_nom, desc = "Socialismo Libertario", "Igualdad social rechazando estructuras de mando."
-        elif x > 5: id_nom, desc = "Liberalismo Radical", "Libertad económica extrema y libertades civiles totales."
-        elif x < -1: id_nom, desc = "Progresismo", "Derechos de minorías y justicia social redistributiva."
-        elif x > 1: id_nom, desc = "Liberalismo Progresista", "Libertad individual con Estado que corrige desigualdades."
-        else: id_nom, desc = "Individualismo", "La libertad personal es la máxima prioridad."
+        if x < -6: id_nom, desc = "Anarco-Comunismo", "Sociedad sin clases ni Estado basada en la ayuda mutua."
+        elif x > 6: id_nom, desc = "Anarco-Capitalismo", "Propiedad privada absoluta sin intervención estatal."
+        else: id_nom, desc = "Libertarismo Radical", "Oposición frontal a la autoridad del Estado."
+    elif abs(x) < 2 and abs(y) < 2:
+        id_nom, desc = "Centrismo Pragmático", "Equilibrio entre libertad individual y orden social."
     else:
-        if x < -5: id_nom, desc = "Socialismo Democrático", "Igualdad mediante el sistema parlamentario."
-        elif x > 5: id_nom, desc = "Liberalismo Clásico", "Libre mercado, propiedad y libertades limitadas."
-        elif x < -2: id_nom, desc = "Socialdemocracia", "Capitalismo con fuerte Estado del bienestar."
-        elif x > 2: id_nom, desc = "Neoliberalismo", "Reducción del gasto público y privatización."
-        elif abs(x) < 1.5: id_nom, desc = "Centrismo Pragmático", "Soluciones técnicas evitando extremos."
-        else: id_nom, desc = "Centro-Moderado", "Postura equilibrada entre los distintos ejes."
+        id_nom, desc = "Perfil Definido", "Tu posición muestra tendencias claras en el espectro político."
 
-    st.markdown(f'<div class="result-bubble"><p class="ideology-title">{id_nom}</p><p class="ideology-desc">{desc}</p></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="result-bubble"><p class="ideology-title">{id_nom}</p><p>{desc}</p></div>', unsafe_allow_html=True)
 
-    # GRÁFICO (TÚ centrado debajo del punto)
-    leaders_html = "".join([f"""
-        <div style="position:absolute; width:8px; height:8px; background:{l['c']}; border-radius:50%; left:{50 + (l['x']*4.5)}%; top:{50 - (l['y']*4.5)}%; transform:translate(-50%,-50%); border:1px solid #000; z-index:2;"></div>
-        <div style="position:absolute; font-size:9px; font-weight:bold; left:{50 + (l['x']*4.5)}%; top:{50 - (l['y']*4.5)}%; transform:translate(-50%, 6px); color:#334155; z-index:2; white-space:nowrap;">{l['n']}</div>
-    """ for l in LEADERS])
+    # Gráfico (TÚ centrado)
+    leaders_html = "".join([f'<div style="position:absolute; width:8px; height:8px; background:{l["c"]}; border-radius:50%; left:{50+(l["x"]*4.5)}%; top:{50-(l["y"]*4.5)}%; transform:translate(-50%,-50%); border:1px solid black;"></div>' for l in LEADERS])
+    ux, uy = 50 + (x * 4.5), 50 - (y * 4.5)
 
-    user_x = max(2, min(98, 50 + (x * 4.5)))
-    user_y = max(2, min(98, 50 - (y * 4.5)))
-
-    compass_code = f"""
-    <div style="position:relative; width:600px; height:600px; margin:auto; background:white; border:3px solid #1e293b; overflow:hidden; font-family:sans-serif; border-radius:10px;">
+    graph_code = f"""
+    <div style="position:relative; width:550px; height:550px; margin:auto; background:white; border:3px solid #1E3A8A; overflow:hidden; font-family:sans-serif;">
         <div style="position:absolute; width:50%; height:50%; top:0; left:0; background:rgba(239,68,68,0.15);"></div>
         <div style="position:absolute; width:50%; height:50%; top:0; right:0; background:rgba(59,130,246,0.15);"></div>
         <div style="position:absolute; width:50%; height:50%; bottom:0; left:0; background:rgba(34,197,94,0.15);"></div>
         <div style="position:absolute; width:50%; height:50%; bottom:0; right:0; background:rgba(234,179,8,0.15);"></div>
-        <div style="position:absolute; width:100%; height:2px; background:#1e293b; top:50%;"></div>
-        <div style="position:absolute; width:2px; height:100%; background:#1e293b; left:50%;"></div>
-        <div style="position:absolute; top:8px; width:100%; text-align:center; font-weight:900; font-size:14px; color:#1e293b;">AUTORITARIO</div>
-        <div style="position:absolute; bottom:8px; width:100%; text-align:center; font-weight:900; font-size:14px; color:#1e293b;">LIBERTARIO</div>
-        <div style="position:absolute; top:48%; left:8px; font-weight:900; font-size:14px; color:#1e293b;">IZQUIERDA</div>
-        <div style="position:absolute; top:48%; right:8px; font-weight:900; font-size:14px; color:#1e293b;">DERECHA</div>
+        <div style="position:absolute; width:100%; height:2px; background:#1E3A8A; top:50%;"></div>
+        <div style="position:absolute; width:2px; height:100%; background:#1E3A8A; left:50%;"></div>
         {leaders_html}
-        <div style="position:absolute; width:16px; height:16px; background:red; border:3px solid white; border-radius:50%; left:{user_x}%; top:{user_y}%; transform:translate(-50%,-50%); z-index:10; box-shadow:0 0 10px red;"></div>
-        <div style="position:absolute; color:red; font-weight:900; font-size:16px; left:{user_x}%; top:{user_y}%; transform:translate(-50%, 14px); z-index:11; font-family:sans-serif; text-shadow:1px 1px white;">TÚ</div>
+        <div style="position:absolute; width:16px; height:16px; background:red; border:2px solid white; border-radius:50%; left:{ux}%; top:{uy}%; transform:translate(-50%,-50%); z-index:10; box-shadow:0 0 10px red;"></div>
+        <div style="position:absolute; color:red; font-weight:900; left:{ux}%; top:{uy}%; transform:translate(-50%, 12px); z-index:11; text-shadow:1px 1px white;">TÚ</div>
     </div>
     """
-    components.html(compass_code, height=640)
+    components.html(graph_code, height=580)
 
-    st.markdown('<div class="action-area">', unsafe_allow_html=True)
+    st.markdown('<div class="action-btn-container">', unsafe_allow_html=True)
     if st.button("🖨️ IMPRIMIR / GUARDAR PDF"):
         components.html("<script>window.print();</script>", height=0)
-    
     if st.button("🔄 REPETIR EL TEST"):
         st.session_state.update({'idx': 0, 'x': 0.0, 'y': 0.0, 'hist': []})
         st.rerun()
@@ -285,30 +255,25 @@ if st.session_state.idx >= len(questions):
 else:
     st.markdown('<div class="main-title">Compás Político</div>', unsafe_allow_html=True)
     
-    # Mensaje de la 1ª pregunta
     if st.session_state.idx == 0:
-        st.markdown('<div class="warning-box">⚠️ Si no sabes lo que significa la pregunta, pon <b>Neutral / No lo sé</b>.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="warning-box">⚠️ Si no comprendes una pregunta, selecciona "Neutral / No lo sé".</div>', unsafe_allow_html=True)
     
     st.progress(st.session_state.idx / len(questions))
-    st.write(f"<p style='text-align:center; color:#64748B; font-weight:bold;'>Pregunta {st.session_state.idx + 1} de {len(questions)}</p>", unsafe_allow_html=True)
+    st.write(f"Pregunta {st.session_state.idx + 1} de {len(questions)}")
     
-    # Pregunta centrada
-    st.markdown(f'<div class="question-container"><span class="question-text">{questions[st.session_state.idx]["t"]}</span></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="question-container"><div class="question-text">{questions[st.session_state.idx]["t"]}</div></div>', unsafe_allow_html=True)
     
-    # Respuestas: Azules, centradas y con bordes suaves
     st.button("✅ Totalmente de acuerdo", on_click=responder, args=(2,))
     st.button("👍 De acuerdo", on_click=responder, args=(1,))
     st.button("😐 Neutral / No lo sé", on_click=responder, args=(0,))
     st.button("👎 En desacuerdo", on_click=responder, args=(-1,))
     st.button("❌ Totalmente en desacuerdo", on_click=responder, args=(-2,))
 
-    # Botón Volver centrado y redondeado
     if st.session_state.idx > 0:
-        st.markdown('<div class="action-area">', unsafe_allow_html=True)
-        if st.button("⬅️ VOLVER A LA PREGUNTA ANTERIOR"):
-            px, py = st.session_state.hist.pop()
-            st.session_state.x -= px
-            st.session_state.y -= py
+        st.markdown('<div class="action-btn-container">', unsafe_allow_html=True)
+        if st.button("⬅️ VOLVER A LA PREGUNTA PREVIA"):
+            vx, vy = st.session_state.hist.pop()
+            st.session_state.x -= vx; st.session_state.y -= vy
             st.session_state.idx -= 1
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
