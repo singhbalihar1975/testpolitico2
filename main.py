@@ -1,86 +1,104 @@
 import streamlit as st
 import base64
 
-# 1. CSS ULTRA-AGRESIVO (Corrige transparencia y botones unidos)
-st.set_page_config(page_title="Brújula Política Estudiantil", layout="wide")
+# 1. CONFIGURACIÓN Y ESTILO CSS (CORRECCIÓN DE ERRORES VISUALES)
+st.set_page_config(page_title="Brújula Política Pro", layout="centered")
 
 st.markdown("""
     <style>
-    .stApp { background-color: #F0F4F8; }
+    /* Fondo Azul Claro en toda la App */
+    .stApp { background-color: #E3F2FD !important; }
     
-    /* Forzar visibilidad del texto en botones */
-    button p {
-        color: black !important;
-        font-weight: 800 !important;
-        font-size: 18px !important;
-    }
-
-    /* Contenedor de preguntas */
-    .question-box {
+    /* Centrado de la caja de preguntas */
+    .main-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         text-align: center;
-        padding: 40px;
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-        margin-bottom: 30px;
     }
 
-    /* BOTONES DE RESPUESTA: Colores sólidos y anchos */
+    .question-text {
+        text-align: center;
+        font-size: 34px !important; 
+        font-weight: 800;
+        color: #0D47A1;
+        margin: 40px 0px;
+        width: 100%;
+    }
+
+    /* BOTONES DE RESPUESTA: Colores y Centrado */
     div.stButton > button {
         width: 100% !important;
-        max-width: 700px !important;
-        height: 60px !important;
+        max-width: 650px !important;
+        height: 65px !important;
         margin: 10px auto !important;
         display: block !important;
-        border-radius: 15px !important;
-        border: 2px solid rgba(0,0,0,0.1) !important;
+        border-radius: 30px !important;
+        font-size: 18px !important;
+        font-weight: bold !important;
+        border: none !important;
     }
 
-    /* Colores específicos por posición de botón */
-    div[data-testid="stVerticalBlock"] > div:nth-child(2) button { background-color: #2E7D32 !important; } /* Verde Oscuro */
-    div[data-testid="stVerticalBlock"] > div:nth-child(3) button { background-color: #A5D6A7 !important; } /* Verde Claro */
-    div[data-testid="stVerticalBlock"] > div:nth-child(4) button { background-color: #FFFFFF !important; } /* Blanco */
-    div[data-testid="stVerticalBlock"] > div:nth-child(5) button { background-color: #EF9A9A !important; } /* Rojo Claro */
-    div[data-testid="stVerticalBlock"] > div:nth-child(6) button { background-color: #C62828 !important; } /* Rojo Oscuro */
-    
-    /* Ajuste texto para botones oscuros */
-    div[data-testid="stVerticalBlock"] > div:nth-child(2) button p,
-    div[data-testid="stVerticalBlock"] > div:nth-child(6) button p { color: white !important; }
+    /* Colores Quirúrgicos para Respuestas */
+    div[data-testid="stVerticalBlock"] > div:nth-child(2) button { background-color: #1B5E20 !important; color: white !important; }
+    div[data-testid="stVerticalBlock"] > div:nth-child(3) button { background-color: #81C784 !important; color: #052b08 !important; }
+    div[data-testid="stVerticalBlock"] > div:nth-child(4) button { background-color: #FFFFFF !important; color: #1565C0 !important; border: 2px solid #BBDEFB !important; }
+    div[data-testid="stVerticalBlock"] > div:nth-child(5) button { background-color: #EF9A9A !important; color: #7f0000 !important; }
+    div[data-testid="stVerticalBlock"] > div:nth-child(6) button { background-color: #B71C1C !important; color: white !important; }
 
-    /* Botones de control (Gris) */
-    .control-btn button {
-        background-color: #546E7A !important;
-        color: white !important;
-        height: 50px !important;
-        width: 250px !important;
+    /* BOTONES FINALES: Negros */
+    .black-button button {
+        background-color: #000000 !important;
+        color: #FFFFFF !important;
+        width: 100% !important;
+        height: 55px !important;
+        border-radius: 10px !important;
+        margin-top: 20px !important;
+    }
+
+    /* Centrado de resultados e ideología */
+    .result-box {
+        text-align: center;
+        background: white;
+        padding: 40px;
+        border-radius: 25px;
+        border: 4px solid #0D47A1;
+        margin-bottom: 20px;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. LÓGICA DE DATOS
+# 2. BASE DE DATOS EXTENDIDA (15 LÍDERES)
+LEADERS = [
+    {"n": "Milei", "x": 180, "y": -170, "c": "#FFD600"},
+    {"n": "Stalin", "x": -190, "y": 190, "c": "#D32F2F"},
+    {"n": "Hitler", "x": 150, "y": 185, "c": "#37474F"},
+    {"n": "Mao", "x": -195, "y": 160, "c": "#F44336"},
+    {"n": "Gandhi", "x": -140, "y": -160, "c": "#4CAF50"},
+    {"n": "Rothbard", "x": 195, "y": -195, "c": "#FF9800"},
+    {"n": "Thatcher", "x": 150, "y": 120, "c": "#1976D2"},
+    {"n": "Castro", "x": -170, "y": 140, "c": "#2E7D32"},
+    {"n": "Pinochet", "x": 160, "y": 160, "c": "#546E7A"},
+    {"n": "Che Guevara", "x": -180, "y": -80, "c": "#000000"},
+    {"n": "Milton Friedman", "x": 170, "y": -120, "c": "#00C853"},
+    {"n": "Mussolini", "x": 120, "y": 190, "c": "#212121"},
+    {"n": "Bernie Sanders", "x": -110, "y": -90, "c": "#03A9F4"},
+    {"n": "John Locke", "x": 100, "y": -140, "c": "#795548"},
+    {"n": "Kropotkin", "x": -190, "y": -190, "c": "#E91E63"}
+]
+
+# 3. LÓGICA DE ESTADO Y PREGUNTAS (85)
 if 'idx' not in st.session_state:
     st.session_state.update({'idx': 0, 'x': 0.0, 'y': 0.0, 'hist': []})
 
 def responder(puntos):
     q = questions[st.session_state.idx]
-    val = puntos * 15.0 * q["v"] 
+    val = puntos * 14.0 * q["v"] 
     if q["a"] == "x": st.session_state.x += val
     else: st.session_state.y += val
     st.session_state.hist.append((val if q["a"]=="x" else 0, val if q["a"]=="y" else 0))
     st.session_state.idx += 1
 
-LEADERS = [
-    {"n": "Milei", "x": 170, "y": -160, "c": "#FFD600"},
-    {"n": "Stalin", "x": -180, "y": 180, "c": "#D32F2F"},
-    {"n": "Hitler", "x": 150, "y": 170, "c": "#37474F"},
-    {"n": "Mao", "x": -190, "y": 150, "c": "#F44336"},
-    {"n": "Gandhi", "x": -120, "y": -150, "c": "#4CAF50"},
-    {"n": "Rothbard", "x": 185, "y": -190, "c": "#FF9800"},
-    {"n": "Thatcher", "x": 130, "y": 100, "c": "#1976D2"},
-    {"n": "Castro", "x": -150, "y": 130, "c": "#2E7D32"}
-]
-
-# (Aquí van las 85 preguntas que ya definimos, las mantengo en la estructura)
 questions = [
     {"t": "Cualquier persona debería poder abrir un negocio sin que el gobierno le ponga muchas reglas.", "a": "x", "v": 1},
     {"t": "Los hospitales deberían ser siempre gratis y pagados con nuestros impuestos.", "a": "x", "v": -1},
@@ -169,29 +187,34 @@ questions = [
     {"t": "Cualquier tiempo pasado fue mejor.", "a": "y", "v": 1}
 ]
 
-# --- PANTALLA DE RESULTADOS ---
+# --- PANTALLA DE RESULTADOS (15 IDEOLOGÍAS) ---
 if st.session_state.idx >= len(questions):
     x, y = st.session_state.x, st.session_state.y
     
-    # 9 IDEOLOGÍAS DETALLADAS
-    if y > 60:
-        if x > 60: n, d = "FASCISMO / AUTORITARISMO DE DERECHAS", "Estado central fuerte, valores tradicionales y economía nacionalista corporativa."
-        elif x < -60: n, d = "COMUNISMO / ESTALINISMO", "Control total del Estado sobre la economía y la vida social para eliminar clases."
-        else: n, d = "ESTATISMO", "Crees que el gobierno debe dirigir la sociedad en todos sus aspectos."
-    elif y < -60:
-        if x > 60: n, d = "ANARCOCAPITALISMO", "Soberanía individual total. El Estado no debería existir, solo la propiedad privada."
-        elif x < -60: n, d = "ANARCOCOMUNISMO", "Abolición del Estado y del dinero. Sociedad basada en la ayuda mutua voluntaria."
-        else: n, d = "LIBERTARISMO", "Máxima libertad personal y escepticismo ante cualquier poder centralizado."
+    if y > 70:
+        if x > 70: n, d = "FASCISMO CLÁSICO", "Supremacía del Estado, nacionalismo extremo y control social total."
+        elif x < -70: n, d = "ESTALINISMO", "Economía planificada centralizada y autoritarismo político absoluto."
+        else: n, d = "TEOCRACIA / TOTALITARISMO", "La ley moral o religiosa rige cada aspecto de la vida pública."
+    elif y > 20:
+        if x > 60: n, d = "CONSERVADURISMO NACIONAL", "Libre mercado con fuertes fronteras y valores tradicionales."
+        elif x < -60: n, d = "SOCIALISMO DE ESTADO", "Propiedad pública de los medios de producción y autoridad estatal."
+        else: n, d = "ORDENISMO", "Crees que el orden es más importante que la libertad absoluta."
+    elif y < -70:
+        if x > 70: n, d = "ANARCOCAPITALISMO", "Abolición total del Estado en favor de la propiedad privada y el mercado."
+        elif x < -70: n, d = "ANARCOCOMUNISMO", "Sociedad sin clases ni Estado basada en la cooperación voluntaria."
+        else: n, d = "ANARQUISMO INDIVIDUALISTA", "Rechazo a toda autoridad jerárquica sobre el individuo."
+    elif y < -20:
+        if x > 60: n, d = "MINARQUISMO / LIBERTARISMO", "El Estado solo debe existir para proteger la propiedad y la vida."
+        elif x < -60: n, d = "SOCIALISMO LIBERTARIO", "Justicia social y colectivismo sin la opresión de un gobierno central."
+        else: n, d = "PROGRESISMO LIBERAL", "Libertades civiles amplias con una economía mixta flexible."
     else:
-        if x > 60: n, d = "NEOLIBERALISMO", "Defensa del libre mercado, impuestos bajos y responsabilidad individual."
-        elif x < -60: n, d = "SOCIALDEMOCRACIA", "Sistema democrático con fuertes ayudas sociales y regulación económica."
-        else: n, d = "CENTRISMO", "Equilibrio entre libertad y seguridad, buscando soluciones pragmáticas."
+        if x > 50: n, d = "NEOLIBERALISMO", "Prioridad al crecimiento económico y la globalización de mercados."
+        elif x < -50: n, d = "SOCIALDEMOCRACIA", "Capitalismo regulado con un fuerte Estado de Bienestar."
+        else: n, d = "CENTRISMO", "Equilibrio pragmático entre mercado, sociedad y orden."
 
-    st.markdown(f'<div style="background:white; padding:30px; border-radius:15px; border-left:10px solid #1976D2; margin-bottom:20px;">'
-                f'<h1 style="color:#0D47A1; margin:0;">{n}</h1>'
-                f'<p style="font-size:18px; color:#444;">{d}</p></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="result-box"><h1>{n}</h1><p style="font-size:20px;">{d}</p></div>', unsafe_allow_html=True)
 
-    # Sub-ejes
+    # Métricas centradas
     c1, c2 = st.columns(2)
     with c1: st.metric("Eje Económico (X)", f"{'Derecha' if x>0 else 'Izquierda'}", f"{int(abs(x))}%")
     with c2: st.metric("Eje Social (Y)", f"{'Autoritario' if y>0 else 'Libertario'}", f"{int(abs(y))}%")
@@ -203,40 +226,43 @@ if st.session_state.idx >= len(questions):
 
     img_data = get_b64("chart.png")
     
-    # Marcadores Líderes
-    l_html = "".join([f'<div style="position:absolute; left:{50+(l["x"]*0.23)}%; top:{50-(l["y"]*0.23)}%; transform:translate(-50%,-50%); text-align:center;">'
-                      f'<div style="width:12px; height:12px; background:{l["c"]}; border-radius:50%; border:2px solid white;"></div>'
-                      f'<div style="font-size:10px; font-weight:bold; color:black; background:rgba(255,255,255,0.8); padding:1px 3px; border-radius:3px;">{l["n"]}</div></div>' for l in LEADERS])
+    # Marcadores de Líderes y "TÚ"
+    l_html = "".join([f'<div style="position:absolute; left:{50+(l["x"]*0.23)}%; top:{50-(l["y"]*0.23)}%; transform:translate(-50%,-50%);">'
+                      f'<div style="width:12px; height:12px; background:{l["c"]}; border-radius:50%; border:1px solid white;"></div>'
+                      f'<div style="font-size:9px; font-weight:bold; color:black; background:white; padding:1px; border-radius:3px;">{l["n"]}</div></div>' for l in LEADERS])
     
-    # MARCADOR TÚ (Alta visibilidad)
     ux, uy = max(5, min(95, 50 + (x * 0.23))), max(5, min(95, 50 - (y * 0.23)))
     
     st.markdown(f"""
-        <div style="position:relative; width:500px; height:500px; margin:20px auto; border:5px solid #0D47A1; border-radius:10px; background:white;">
+        <div style="position:relative; width:500px; height:500px; margin:20px auto; border:4px solid #0D47A1; background:white; border-radius:15px; overflow:hidden;">
             <img src="data:image/png;base64,{img_data}" style="width:100%; height:100%;">
             {l_html}
-            <div style="position:absolute; left:{ux}%; top:{uy}%; transform:translate(-50%,-50%); z-index:999;">
-                <div style="width:30px; height:30px; background:#FF1744; border-radius:50%; border:4px solid white; box-shadow:0 0 15px rgba(255,0,0,0.8);"></div>
-                <div style="font-size:16px; font-weight:900; color:white; background:#FF1744; padding:2px 8px; border-radius:5px; margin-top:5px; text-shadow:1px 1px 2px black;">TÚ</div>
+            <div style="position:absolute; left:{ux}%; top:{uy}%; transform:translate(-50%,-50%); z-index:100;">
+                <div style="width:28px; height:28px; background:#FF1744; border-radius:50%; border:3px solid white; box-shadow:0 0 10px red;"></div>
+                <div style="background:#FF1744; color:white; font-weight:900; padding:2px 6px; border-radius:5px; margin-top:4px; font-size:14px; text-align:center;">TÚ</div>
             </div>
         </div>
     """, unsafe_allow_html=True)
 
-    # BOTONES FINALES SEPARADOS
+    # BOTONES FINALES NEGROS
     st.write("---")
-    col_a, col_b, col_c = st.columns([1, 0.2, 1])
-    with col_a:
-        if st.button("🔄 REINICIAR TEST", use_container_width=True):
+    cola, colb = st.columns(2)
+    with cola:
+        st.markdown('<div class="black-button">', unsafe_allow_html=True)
+        if st.button("🔄 REINICIAR TEST"):
             st.session_state.update({'idx':0, 'x':0, 'y':0, 'hist':[]})
             st.rerun()
-    with col_c:
-        if st.button("🖨️ IMPRIMIR / GUARDAR PDF", use_container_width=True):
+        st.markdown('</div>', unsafe_allow_html=True)
+    with colb:
+        st.markdown('<div class="black-button">', unsafe_allow_html=True)
+        if st.button("🖨️ IMPRIMIR / PDF"):
             st.components.v1.html("<script>window.print();</script>", height=0)
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # --- PANTALLA DE PREGUNTAS ---
 else:
     st.progress(st.session_state.idx / len(questions))
-    st.markdown(f'<div class="question-box"><h2 style="color:#0D47A1;">{questions[st.session_state.idx]["t"]}</h2></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="question-text">{questions[st.session_state.idx]["t"]}</div>', unsafe_allow_html=True)
     
     st.button("Totalmente de acuerdo", on_click=responder, args=(2,))
     st.button("De acuerdo", on_click=responder, args=(1,))
