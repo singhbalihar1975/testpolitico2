@@ -4,64 +4,75 @@ import streamlit.components.v1 as components
 # 1. CONFIGURACIÓN DE PÁGINA
 st.set_page_config(page_title="Compás Político", layout="centered")
 
-# 2. ESTILOS CSS (Centrado absoluto y correcciones visuales)
+# 2. ESTILOS CSS (Centrado total y botones simétricos)
 st.markdown("""
     <style>
-    /* Fondo y fuentes */
     .stApp { background-color: #F8FAFC; }
     
-    /* Forzar centrado de todos los bloques de Streamlit */
-    .block-container { 
-        display: flex; flex-direction: column; align-items: center; justify-content: center; 
+    /* Contenedor principal para centrar todo */
+    .block-container {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        padding-top: 2rem;
     }
 
-    .main-title { text-align: center; font-size: 48px; font-weight: 800; color: #1E3A8A; margin-bottom: 20px; width: 100%; }
+    .main-title { text-align: center; font-size: 48px; font-weight: 800; color: #1E3A8A; margin-bottom: 10px; width: 100%; }
     
-    /* Caja de pregunta con centrado de texto */
+    /* Caja de pregunta centrada y con ancho fijo */
     .question-container { 
-        text-align: center; margin: 30px auto; max-width: 800px; width: 100%; 
-        display: flex; justify-content: center; align-items: center; min-height: 120px;
+        text-align: center; margin: 20px auto; max-width: 600px; width: 100%; 
+        min-height: 120px; display: flex; align-items: center; justify-content: center;
     }
-    .question-text { font-size: 28px !important; font-weight: 700; color: #1E3A8A; line-height: 1.4; text-align: center; }
+    .question-text { font-size: 26px !important; font-weight: 700; color: #1E3A8A; line-height: 1.3; }
     
     /* Nota de aviso centrada */
     .warning-box { 
         background-color: #FFFBEB; border: 1px solid #F59E0B; border-radius: 12px;
         padding: 20px; margin: 0 auto 30px auto; max-width: 600px;
-        color: #92400E; text-align: center; font-weight: 600; font-size: 17px; width: 100%;
+        color: #92400E; text-align: center; font-weight: 600; font-size: 16px; width: 100%;
     }
 
-    /* Burbuja de Ideología centrada */
+    /* Burbuja de Ideología Final */
     .result-bubble {
-        background-color: white; border-radius: 25px; padding: 40px;
+        background-color: white; border-radius: 20px; padding: 35px;
         box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 2px solid #E2E8F0;
-        text-align: center; margin: 0 auto 40px auto; max-width: 700px; width: 100%;
+        text-align: center; margin: 0 auto 30px auto; width: 100%; max-width: 600px;
     }
-    .ideology-title { font-size: 38px !important; font-weight: 900; color: #2563EB; text-transform: uppercase; margin: 0; }
-    .ideology-desc { font-size: 18px; color: #475569; margin-top: 15px; line-height: 1.6; }
+    .ideology-title { font-size: 34px !important; font-weight: 900; color: #2563EB; text-transform: uppercase; margin: 0; }
+    .ideology-desc { font-size: 17px; color: #475569; margin-top: 12px; line-height: 1.5; }
 
-    /* Botones de respuesta: Centrado absoluto y tamaño uniforme */
+    /* BOTONES DE RESPUESTA: Misma longitud y centrados */
     div.stButton > button {
-        width: 100% !important; max-width: 600px !important; height: 62px !important;
-        border-radius: 12px !important; font-size: 19px !important;
-        background-color: #DBEAFE !important; color: #1E40AF !important;
-        border: 2px solid #BFDBFE !important; margin: 12px auto !important;
-        display: block !important; transition: 0.2s ease; font-weight: 600;
+        width: 100% !important; 
+        max-width: 600px !important; 
+        height: 58px !important;
+        border-radius: 10px !important; 
+        font-size: 18px !important;
+        background-color: #DBEAFE !important; 
+        color: #1E40AF !important;
+        border: 2px solid #BFDBFE !important; 
+        margin: 10px auto !important;
+        display: block !important; 
+        font-weight: 600;
+        transition: 0.3s;
     }
-    div.stButton > button:hover { background-color: #BFDBFE !important; border-color: #3B82F6 !important; transform: scale(1.01); }
+    div.stButton > button:hover { 
+        background-color: #BFDBFE !important; 
+        border-color: #3B82F6 !important; 
+        transform: scale(1.02); 
+    }
 
-    /* Centrado de barra de progreso */
-    .stProgress { width: 100% !important; max-width: 600px; margin: 0 auto; }
+    /* Barra de progreso centrada */
+    .stProgress { max-width: 600px; margin: 0 auto; }
     
     /* Botón volver */
-    .back-btn-container { display: flex; justify-content: center; width: 100%; margin-top: 30px; }
+    .back-btn-container { display: flex; justify-content: center; width: 100%; margin-top: 25px; }
     .back-btn-container div.stButton > button { 
         background-color: #F1F5F9 !important; color: #64748B !important; 
-        max-width: 320px !important; border: 1px solid #E2E8F0 !important; font-size: 15px !important;
+        max-width: 300px !important; border: 1px solid #E2E8F0 !important; font-size: 14px !important;
     }
     
-    /* Centrado del Iframe del gráfico */
-    iframe { display: block; margin: 0 auto; border-radius: 12px; }
+    /* Gráfico centrado */
+    iframe { display: block; margin: 0 auto; border-radius: 15px; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -92,7 +103,7 @@ LEADERS = [
     {"n": "Mujica", "x": -7, "y": -4, "c": "#48BB78"}
 ]
 
-# 4. LAS 85 PREGUNTAS
+# 4. PREGUNTAS (85)
 questions = [
     # ECONÓMICAS
     {"t": "El gobierno no debería decir a las empresas cuánto pagar a sus empleados.", "a": "x", "v": 1},
@@ -236,7 +247,7 @@ if st.session_state.idx >= len(questions):
 
     st.markdown(f'<div class="result-bubble"><p class="ideology-title">{id_nom}</p><p class="ideology-desc">{desc}</p></div>', unsafe_allow_html=True)
 
-    # GRÁFICO (600px con "TÚ" debajo del punto)
+    # GRÁFICO (TÚ debajo del punto)
     leaders_html = "".join([f"""
         <div style="position:absolute; width:8px; height:8px; background:{l['c']}; border-radius:50%; left:{50 + (l['x']*4.5)}%; top:{50 - (l['y']*4.5)}%; transform:translate(-50%,-50%); border:1px solid #000; z-index:2;"></div>
         <div style="position:absolute; font-size:9px; font-weight:bold; left:{50 + (l['x']*4.5)}%; top:{50 - (l['y']*4.5)}%; transform:translate(-50%, 6px); color:#334155; z-index:2; white-space:nowrap;">{l['n']}</div>
@@ -264,9 +275,7 @@ if st.session_state.idx >= len(questions):
     """
     components.html(compass_code, height=640)
 
-    st.markdown('<div style="display:flex; flex-direction:column; align-items:center; margin-top:20px; width:100%;">', unsafe_allow_html=True)
-    if st.button("🖨️ IMPRIMIR / GUARDAR RESULTADO"):
-        components.html("<script>window.print();</script>", height=0)
+    st.markdown('<div style="display:flex; flex-direction:column; align-items:center; width:100%;">', unsafe_allow_html=True)
     if st.button("🔄 REPETIR TEST"):
         st.session_state.update({'idx': 0, 'x': 0.0, 'y': 0.0, 'hist': []})
         st.rerun()
@@ -285,7 +294,7 @@ else:
     # Pregunta centrada
     st.markdown(f'<div class="question-container"><span class="question-text">{questions[st.session_state.idx]["t"]}</span></div>', unsafe_allow_html=True)
     
-    # Botones centrados
+    # Botones centrados y con misma longitud
     st.button("✅ Totalmente de acuerdo", on_click=responder, args=(2,))
     st.button("👍 De acuerdo", on_click=responder, args=(1,))
     st.button("😐 Neutral / No lo sé", on_click=responder, args=(0,))
