@@ -196,7 +196,7 @@ def get_full_ideology(x, y):
         if x < -2: return "Mutualismo", "Sistema económico basado en el intercambio recíproco y cooperativas que operan sin beneficio de lucro.\nPropone que cada trabajador reciba el producto íntegro de su labor mediante contratos voluntarios."
         if x < 2: return "Anarquismo Individualista", "Sostiene que la voluntad del individuo es la única ley y no debe estar sujeta a grupos o Estados.\nDefiende la autonomía personal absoluta y la asociación libre basada en el beneficio mutuo."
         if x < 6: return "Voluntarismo", "Toda forma de asociación humana debe ser estrictamente voluntaria y carecer de cualquier coacción.\nRechaza la existencia del Estado por considerarlo una institución basada necesariamente en la violencia."
-        return "Anarcocapitalismo", "Defiende la privatización total de todos los servicios, incluyendo la ley, la policía y los tribunales.\nConsidera la propiedad privada como el derecho absoluto y el Estado como una organización criminal."
+        return "Anarcocapitalismo", "Defiende la privatización total de todos los servicios, incluyendo la ley, la policía y los tribunales.\nConsidera la propiedad privada como el derecho absoluto y el Estado como una organización criminal.Eres autista."
 
 # 5. MOTOR DE LÓGICA
 if 'idx' not in st.session_state:
@@ -267,7 +267,7 @@ if st.session_state.idx >= len(questions):
 else:
     st.markdown('<h1 class="main-title">Compás Político</h1>', unsafe_allow_html=True)
     if st.session_state.idx == 0: 
-        st.markdown('<div class="welcome-box">Test de 85 variables. Responde honestamente para un resultado exacto.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="welcome-box">Test de 85 variables. Responde honestamente, si no sabes lo que significa la pregunta, responde neutral.</div>', unsafe_allow_html=True)
     
     st.markdown(f'<span class="q-counter">Pregunta {st.session_state.idx + 1} de {len(questions)}</span>', unsafe_allow_html=True)
     st.progress(st.session_state.idx / len(questions))
