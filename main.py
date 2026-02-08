@@ -1,76 +1,72 @@
 import streamlit as st
 import base64
 
-# 1. CSS ULTRA-ROBUSTO: FUERZA BRUTA PARA COLORES Y TAMAÑOS
+# 1. CONFIGURACIÓN Y CSS QUIRÚRGICO
 st.set_page_config(page_title="Brújula Política Estudiantil", layout="centered")
 
+# CSS que solo aplica a los botones de respuesta para no romper el final
 st.markdown("""
     <style>
-    /* Fondo General */
     .stApp { background-color: #E3F2FD; }
     
-    /* Texto de la pregunta */
     .question-text {
         text-align: center;
-        font-size: 36px !important; 
+        font-size: 32px !important; 
         font-weight: 800;
         color: #0D47A1;
-        margin-bottom: 50px;
+        margin-bottom: 40px;
     }
 
-    /* FORZAR TODOS LOS BOTONES A SER IGUALES */
-    /* El margen de 60px a la izquierda los desplaza a la derecha */
-    .stButton > button {
-        width: 650px !important; 
-        height: 70px !important;
-        border-radius: 35px !important;
-        font-size: 20px !important;
+    /* Estilo para los botones de respuesta */
+    /* El margen de 40px los desplaza ligeramente a la derecha */
+    div.stButton > button {
+        width: 600px !important; 
+        height: 65px !important;
+        border-radius: 30px !important;
+        font-size: 18px !important;
         font-weight: bold !important;
-        margin-left: 60px !important; 
-        display: block !important;
+        margin-left: 40px !important; 
         border: none !important;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important;
         transition: 0.3s;
     }
 
-    /* COLORES POR ORDEN ESTRICTO DE BOTÓN EN LA PANTALLA */
-    /* 1. Totalmente de acuerdo */
+    /* COLORES ESPECÍFICOS POR ORDEN (Solo para las 5 respuestas) */
     div.stButton:nth-of-type(1) button { background-color: #1B5E20 !important; color: white !important; }
-    /* 2. De acuerdo */
     div.stButton:nth-of-type(2) button { background-color: #81C784 !important; color: #052b08 !important; }
-    /* 3. Neutral */
     div.stButton:nth-of-type(3) button { background-color: #FFFFFF !important; color: #1565C0 !important; border: 2px solid #BBDEFB !important; }
-    /* 4. En desacuerdo */
     div.stButton:nth-of-type(4) button { background-color: #EF9A9A !important; color: #7f0000 !important; }
-    /* 5. Totalmente en desacuerdo */
     div.stButton:nth-of-type(5) button { background-color: #B71C1C !important; color: white !important; }
 
-    /* Botón Volver / Otros (Gris) */
-    div.stButton:nth-of-type(6) button { 
+    /* Botón Volver y botones finales (Gris/Azul) */
+    div.stButton:nth-of-type(n+6) button { 
         background-color: #546E7A !important; 
         color: white !important; 
         width: 300px !important; 
         height: 45px !important;
-        margin-top: 40px !important;
+        margin-left: 40px !important;
     }
 
-    /* Hover global */
-    .stButton > button:hover { transform: scale(1.02); filter: brightness(1.1); }
+    /* RESULTADOS */
+    .result-box {
+        background: white; padding: 30px; border-radius: 20px;
+        text-align: center; border: 5px solid #1976D2; margin-top: 20px;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. SISTEMA DE PREGUNTAS (85)
+# 2. LÓGICA DE ESTADO
 if 'idx' not in st.session_state:
     st.session_state.update({'idx': 0, 'x': 0.0, 'y': 0.0, 'hist': []})
 
 def responder(puntos):
     q = questions[st.session_state.idx]
-    val = puntos * 18.0 * q["v"] 
+    val = puntos * 15.0 * q["v"] 
     if q["a"] == "x": st.session_state.x += val
     else: st.session_state.y += val
     st.session_state.hist.append((val if q["a"]=="x" else 0, val if q["a"]=="y" else 0))
     st.session_state.idx += 1
 
+# 3. DATOS: LÍDERES Y PREGUNTAS (85)
 LEADERS = [
     {"n": "Milei", "x": 175, "y": -165, "c": "#FFD600"},
     {"n": "Stalin", "x": -195, "y": 195, "c": "#D32F2F"},
@@ -165,37 +161,69 @@ questions = [
     {"t": "Las huelgas solo sirven para perder tiempo.", "a": "x", "v": 1},
     {"t": "La tecnología nos hace menos humanos.", "a": "y", "v": 1},
     {"t": "Los multimillonarios deben dar su dinero al Estado.", "a": "x", "v": -1},
-    {"t": "Prohibir pronto los coches de gasolina.", "a": "x", "v": -1},
+    {"t": "Hay que prohibir pronto los coches de gasolina.", "a": "x", "v": -1},
     {"t": "Sin autoridad la sociedad sería un caos.", "a": "y", "v": 1},
     {"t": "Cualquier tiempo pasado fue mejor.", "a": "y", "v": 1}
 ]
 
-# --- PANTALLAS ---
+# --- PANTALLA DE RESULTADOS ---
 if st.session_state.idx >= len(questions):
     x, y = st.session_state.x, st.session_state.y
-    # Resultados (Omitido lógica de dibujo por brevedad del script, pero se mantiene la estructura anterior)
-    st.success(f"Test Finalizado. Coordenadas: X:{x}, Y:{y}")
     
-    if st.button("🔄 REINICIAR"):
-        st.session_state.update({'idx':0, 'x':0, 'y':0, 'hist':[]})
-        st.rerun()
-    
-    if st.button("🖨️ IMPRIMIR RESULTADOS"):
-        st.components.v1.html("<script>window.print();</script>")
+    # Determinación de Ideología
+    if x > 50 and y > 50: n, d = "DERECHA AUTORITARIA", "Crees en el orden social estricto y la libertad económica de mercado."
+    elif x < -50 and y > 50: n, d = "IZQUIERDA AUTORITARIA", "Apoyas un Estado fuerte que regule la economía y la sociedad."
+    elif x > 50 and y < -50: n, d = "LIBERALISMO RADICAL", "La libertad individual y el mercado están por encima de cualquier autoridad."
+    elif x < -50 and y < -50: n, d = "IZQUIERDA LIBERTARIA", "Buscas la igualdad social sin la opresión de un Estado centralizado."
+    else: n, d = "CENTRO POLÍTICO", "Tus ideas son moderadas y equilibradas entre las distintas corrientes."
 
+    st.markdown(f'<div class="result-box"><h1 style="color:#0D47A1;">{n}</h1><p style="font-size:20px;">{d}</p></div>', unsafe_allow_html=True)
+
+    # Imagen del Mapa
+    def get_b64(f):
+        try:
+            with open(f, "rb") as b: return base64.b64encode(b.read()).decode()
+        except: return ""
+
+    img_data = get_b64("chart.png")
+    
+    # Dibujar Líderes y Punto del Usuario
+    l_html = "".join([f'<div style="position:absolute; left:{50+(l["x"]*0.23)}%; top:{50-(l["y"]*0.23)}%; width:14px; height:14px; background:{l["c"]}; border-radius:50%; border:2px solid white; transform:translate(-50%,-50%); z-index:10;"></div>' for l in LEADERS])
+    ux, uy = max(5, min(95, 50 + (x * 0.23))), max(5, min(95, 50 - (y * 0.23)))
+    
+    st.markdown(f"""
+        <div style="position:relative; width:450px; height:450px; margin:30px auto; border:8px solid white; border-radius:15px; box-shadow:0 10px 30px rgba(0,0,0,0.2); overflow:hidden;">
+            <img src="data:image/png;base64,{img_data}" style="width:100%; height:100%;">
+            {l_html}
+            <div style="position:absolute; left:{ux}%; top:{uy}%; width:30px; height:30px; background:#FF1744; border-radius:50%; border:3px solid white; transform:translate(-50%,-50%); z-index:100; box-shadow:0 0 15px #FF1744;"></div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("🔄 REINICIAR TEST"):
+            st.session_state.update({'idx':0, 'x':0, 'y':0, 'hist':[]})
+            st.rerun()
+    with col2:
+        if st.button("🖨️ IMPRIMIR / PDF"):
+            st.components.v1.html("<script>window.print();</script>", height=0)
+
+# --- PANTALLA DE PREGUNTAS ---
 else:
     st.progress(st.session_state.idx / len(questions))
     st.markdown(f'<div class="question-text">{questions[st.session_state.idx]["t"]}</div>', unsafe_allow_html=True)
     
-    # Renderizado directo de botones
+    # Botones de respuesta
     st.button("Totalmente de acuerdo", on_click=responder, args=(2,))
     st.button("De acuerdo", on_click=responder, args=(1,))
     st.button("No estoy seguro / Neutral", on_click=responder, args=(0,))
     st.button("En desacuerdo", on_click=responder, args=(-1,))
     st.button("Totalmente en desacuerdo", on_click=responder, args=(-2,))
 
+    # Botón Volver
     if st.session_state.idx > 0:
-        st.button("⬅️ VOLVER A LA PREGUNTA ANTERIOR", on_click=lambda: (
-            st.session_state.hist.pop(), 
-            st.session_state.update({'idx': st.session_state.idx - 1})
-        ))
+        if st.button("⬅️ VOLVER A LA ANTERIOR"):
+            px, py = st.session_state.hist.pop()
+            st.session_state.x -= px; st.session_state.y -= py
+            st.session_state.idx -= 1
+            st.rerun()
