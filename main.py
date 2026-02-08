@@ -165,7 +165,7 @@ questions = [
     {"t": "El castigo físico moderado a niños es educativo.", "a": "y", "v": 1}
 ]
 
-# 4. LÓGICA DE LAS 25 IDEOLOGÍAS (DESCRIPCIONES DE 2 LÍNEAS)
+# 4. LÓGICA DE LAS 25 IDEOLOGÍAS
 def get_full_ideology(x, y):
     if y > 6:
         if x < -6: return "Marxismo-Leninismo", "Defiende la abolición de la propiedad privada mediante el control total del Estado.\nBusca la dictadura del proletariado para eliminar las clases sociales por la fuerza."
@@ -198,54 +198,89 @@ def get_full_ideology(x, y):
         if x < 6: return "Voluntarismo", "Toda forma de asociación humana debe ser estrictamente voluntaria y carecer de cualquier coacción.\nRechaza la existencia del Estado por considerarlo una institución basada necesariamente en la violencia."
         return "Anarcocapitalismo", "Defiende la privatización total de todos los servicios, incluyendo la ley, la policía y los tribunales.\nConsidera la propiedad privada como el derecho absoluto y el Estado como una organización criminal."
 
-# 5. MOTOR
+# 5. MOTOR DE LÓGICA
 if 'idx' not in st.session_state:
     st.session_state.update({'idx': 0, 'hx': [], 'hy': []})
 
 def responder(p):
     q = questions[st.session_state.idx]
-    if q['a'] == 'x': st.session_state.hx.append(p * q['v']); st.session_state.hy.append(0)
-    else: st.session_state.hy.append(p * q['v']); st.session_state.hx.append(0)
+    if q['a'] == 'x': 
+        st.session_state.hx.append(p * q['v'])
+        st.session_state.hy.append(0)
+    else: 
+        st.session_state.hy.append(p * q['v'])
+        st.session_state.hx.append(0)
     st.session_state.idx += 1
 
 def volver():
     if st.session_state.idx > 0:
         st.session_state.idx -= 1
-        st.session_state.hx.pop(); st.session_state.hy.pop()
+        st.session_state.hx.pop()
+        st.session_state.hy.pop()
 
-# --- RESULTADOS ---
+# --- RESULTADOS FINALES ---
 if st.session_state.idx >= len(questions):
     st.markdown('<h1 class="main-title">Tu Compás Político</h1>', unsafe_allow_html=True)
     total_x = len([q for q in questions if q['a'] == 'x'])
     total_y = len([q for q in questions if q['a'] == 'y'])
+    
+    # Normalización a escala -10 a 10
     ux = max(min((sum(st.session_state.hx) / (total_x * 2)) * 10, 10), -10)
     uy = max(min((sum(st.session_state.hy) / (total_y * 2)) * 10, 10), -10)
+    
     name, desc = get_full_ideology(ux, uy)
     match = min(LEADERS, key=lambda l: math.sqrt((ux-l['x'])**2 + (uy-l['y'])**2))['n']
     
     st.markdown(f'<div class="result-bubble"><span class="ideology-title">{name}</span><span class="ideology-desc">{desc}</span><span class="match-tag">Más cercano a: {match}</span></div>', unsafe_allow_html=True)
     
+    # Dibujo del Gráfico con Brillo en el círculo "TÚ"
     px, py = 250 + (ux * 23), 250 - (uy * 23)
     leaders_svg = "".join([f'<circle cx="{250+(l["x"]*23)}" cy="{250-(l["y"]*23)}" r="5" fill="{l["c"]}" stroke="black"/><text x="{250+(l["x"]*23)}" y="{250-(l["y"]*23)+14}" font-size="10" text-anchor="middle" font-weight="bold" font-family="sans-serif">{l["n"]}</text>' for l in LEADERS])
     
-    svg = f"""<div style="display:flex; justify-content:center;"><svg width="500" height="500" viewBox="0 0 500 500" style="border:3px solid #333; background:white; font-family: sans-serif;">
+    svg = f"""<div style="display:flex; justify-content:center;">
+    <svg width="500" height="500" viewBox="0 0 500 500" style="border:3px solid #333; background:white; font-family: sans-serif;">
+        <defs>
+            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="4.5" result="coloredBlur"/>
+                <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+        </defs>
+        
         <rect width="250" height="250" fill="#FFB2B2" opacity="0.5"/><rect x="250" width="250" height="250" fill="#B2B2FF" opacity="0.5"/><rect y="250" width="250" height="250" fill="#B2FFB2" opacity="0.5"/><rect x="250" y="250" width="250" height="250" fill="#FFFFB2" opacity="0.5"/>
-        <line x1="250" y1="0" x2="250" y2="500" stroke="black"/><line x1="0" y1="250" x2="500" y2="250" stroke="black"/>{leaders_svg}
-        <circle cx="{px}" cy="{py}" r="10" fill="red" stroke="white" stroke-width="4"/><text x="{px}" y="{py-18}" fill="red" font-weight="950" font-size="22" text-anchor="middle">TÚ</text></svg></div>"""
+        <line x1="250" y1="0" x2="250" y2="500" stroke="black" stroke-width="1"/><line x1="0" y1="250" x2="500" y2="250" stroke="black" stroke-width="1"/>
+        
+        {leaders_svg}
+        
+        <circle cx="{px}" cy="{py}" r="11" fill="red" stroke="white" stroke-width="3" filter="url(#glow)"/>
+        <text x="{px}" y="{py-20}" fill="red" font-weight="950" font-size="24" text-anchor="middle">TÚ</text>
+    </svg></div>"""
+    
     components.html(svg, height=520)
-    if st.button("REINICIAR TEST"): st.session_state.update({'idx': 0, 'hx': [], 'hy': []}); st.rerun()
+    if st.button("REINICIAR TEST"): 
+        st.session_state.update({'idx': 0, 'hx': [], 'hy': []})
+        st.rerun()
 
-# --- PREGUNTAS ---
+# --- INTERFAZ DE PREGUNTAS ---
 else:
     st.markdown('<h1 class="main-title">Compás Político</h1>', unsafe_allow_html=True)
-    if st.session_state.idx == 0: st.markdown('<div class="welcome-box">Test de 85 variables. Responde honestamente para un resultado exacto.</div>', unsafe_allow_html=True)
+    if st.session_state.idx == 0: 
+        st.markdown('<div class="welcome-box">Test de 85 variables. Responde honestamente para un resultado exacto.</div>', unsafe_allow_html=True)
+    
     st.markdown(f'<span class="q-counter">Pregunta {st.session_state.idx + 1} de {len(questions)}</span>', unsafe_allow_html=True)
     st.progress(st.session_state.idx / len(questions))
+    
     st.markdown(f'<div class="question-container"><p class="question-text">{questions[st.session_state.idx]["t"]}</p></div>', unsafe_allow_html=True)
+    
     st.button("✅ Totalmente de acuerdo", on_click=responder, args=(2,))
     st.button("👍 De acuerdo", on_click=responder, args=(1,))
     st.button("😐 Neutral / No lo sé", on_click=responder, args=(0,))
     st.button("👎 En desacuerdo", on_click=responder, args=(-1,))
     st.button("❌ Totalmente en desacuerdo", on_click=responder, args=(-2,))
+    
     if st.session_state.idx > 0: 
-        st.markdown('<div class="back-btn">', unsafe_allow_html=True); st.button("⬅️ Pregunta Anterior", on_click=volver); st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('<div class="back-btn">', unsafe_allow_html=True)
+        st.button("⬅️ Pregunta Anterior", on_click=volver)
+        st.markdown('</div>', unsafe_allow_html=True)
