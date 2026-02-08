@@ -1,15 +1,13 @@
 import streamlit as st
 import base64
 
-# 1. CONFIGURACIÓN Y CSS RADICAL PARA CENTRADO Y COLORES
+# 1. ESTÉTICA DEFINITIVA Y CONTROL DE COLORES
 st.set_page_config(page_title="Brújula Política Estudiantil", layout="centered")
 
 st.markdown("""
     <style>
-    /* Fondo Azul Claro */
     .stApp { background-color: #E3F2FD; }
     
-    /* PREGUNTAS GIGANTES */
     .question-text {
         text-align: center;
         font-size: 38px !important; 
@@ -19,59 +17,54 @@ st.markdown("""
         line-height: 1.1;
     }
 
-    /* FORZAR QUE CADA BOTÓN OCUPE SU LÍNEA Y ESTÉ CENTRADO */
+    /* CONTENEDOR DE BOTONES: Centrado con ligero desplazamiento a la derecha */
     div.stButton {
         display: flex;
         justify-content: center;
         width: 100%;
+        margin-left: 20px; /* Desplazamiento ligero a la derecha */
     }
 
     div.stButton > button {
-        width: 600px !important; /* Ancho fijo para todos */
+        width: 620px !important; 
         height: 70px !important;
         border-radius: 35px !important;
         font-size: 20px !important;
         font-weight: bold !important;
         border: none !important;
-        margin: 5px auto !important; /* Centrado automático */
+        margin: 8px 0px !important;
         box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
         transition: 0.3s;
     }
 
-    /* COLORES ASIGNADOS POR ORDEN DE APARICIÓN (Equivale a las respuestas) */
+    /* COLORES ESPECÍFICOS POR POSICIÓN (Basado en el orden de renderizado) */
     /* 1. Totalmente de acuerdo - Verde Oscuro */
-    div.stButton:nth-of-type(1) > button { background-color: #1B5E20 !important; color: white !important; }
+    div[data-testid="stVerticalBlock"] > div:nth-child(3) div.stButton button { background-color: #1B5E20 !important; color: white !important; }
     /* 2. De acuerdo - Verde Claro */
-    div.stButton:nth-of-type(2) > button { background-color: #81C784 !important; color: #052b08 !important; }
+    div[data-testid="stVerticalBlock"] > div:nth-child(4) div.stButton button { background-color: #81C784 !important; color: #052b08 !important; }
     /* 3. Neutral - Blanco */
-    div.stButton:nth-of-type(3) > button { background-color: #FFFFFF !important; color: #1565C0 !important; border: 2px solid #BBDEFB !important; }
+    div[data-testid="stVerticalBlock"] > div:nth-child(5) div.stButton button { background-color: #FFFFFF !important; color: #1565C0 !important; border: 2px solid #BBDEFB !important; }
     /* 4. En desacuerdo - Rojo Claro */
-    div.stButton:nth-of-type(4) > button { background-color: #EF9A9A !important; color: #7f0000 !important; }
+    div[data-testid="stVerticalBlock"] > div:nth-child(6) div.stButton button { background-color: #EF9A9A !important; color: #7f0000 !important; }
     /* 5. Totalmente en desacuerdo - Rojo Oscuro */
-    div.stButton:nth-of-type(5) > button { background-color: #B71C1C !important; color: white !important; }
+    div[data-testid="stVerticalBlock"] > div:nth-child(7) div.stButton button { background-color: #B71C1C !important; color: white !important; }
 
-    /* Botón Volver - Gris azulado */
-    div.stButton:nth-of-type(6) > button { 
+    /* Botón Volver / Reiniciar / Imprimir */
+    div[data-testid="stVerticalBlock"] > div:nth-child(8) div.stButton button,
+    .print-btn button { 
         background-color: #546E7A !important; 
         color: white !important; 
         width: 300px !important;
-        margin-top: 40px !important;
-        font-size: 16px !important;
+        margin-top: 30px !important;
     }
 
-    /* EFECTO HOVER */
     div.stButton > button:hover { transform: scale(1.02); filter: brightness(1.1); }
 
-    /* TARJETA DE RESULTADOS */
     .result-card {
         background-color: white; padding: 40px; border-radius: 30px;
         text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.1);
         border: 6px solid #1976D2;
     }
-    .result-title { font-size: 50px; font-weight: 900; color: #0D47A1; }
-    .result-desc { font-size: 24px; color: #37474F; }
-
-    /* MAPA Y LEYENDA */
     .map-container {
         position: relative; width: 450px; height: 450px; 
         margin: 30px auto; border: 10px solid white; border-radius: 20px;
@@ -86,7 +79,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2. LÓGICA DE DATOS
+# 2. LÓGICA
 if 'idx' not in st.session_state:
     st.session_state.update({'idx': 0, 'x': 0.0, 'y': 0.0, 'hist': []})
 
@@ -109,7 +102,7 @@ LEADERS = [
     {"n": "Castro", "x": -170, "y": 150, "c": "#2E7D32"}
 ]
 
-# 3. LISTADO COMPLETO DE 85 PREGUNTAS
+# 3. PREGUNTAS (85)
 questions = [
     {"t": "Cualquier persona debería poder abrir un negocio sin que el gobierno le ponga muchas reglas.", "a": "x", "v": 1},
     {"t": "Los hospitales deberían ser siempre gratis y pagados con nuestros impuestos.", "a": "x", "v": -1},
@@ -198,7 +191,7 @@ questions = [
     {"t": "Cualquier tiempo pasado fue mucho mejor.", "a": "y", "v": 1}
 ]
 
-# --- FLUJO DE LA APP ---
+# --- PANTALLAS ---
 if st.session_state.idx >= len(questions):
     x, y = st.session_state.x, st.session_state.y
     
@@ -208,7 +201,7 @@ if st.session_state.idx >= len(questions):
     elif x < -100 and y < -100: n, d = "IZQUIERDA LIBERTARIA", "Comunidades libres sin jerarquías."
     else: n, d = "CENTRO POLÍTICO", "Moderación y sentido común."
 
-    st.markdown(f'<div class="result-card"><div class="result-title">{n}</div><div class="result-desc">{d}</div></div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="result-card"><div class="result-title" style="font-size:50px; color:#0D47A1;">{n}</div><div class="result-desc">{d}</div></div>', unsafe_allow_html=True)
 
     def get_b64(f):
         try:
@@ -217,31 +210,24 @@ if st.session_state.idx >= len(questions):
 
     img_data = get_b64("chart.png")
     l_html = "".join([f'<div class="dot" style="left:{50+(l["x"]*0.23)}%; top:{50-(l["y"]*0.23)}%; width:16px; height:16px; background:{l["c"]}; z-index:50;"></div>' for l in LEADERS])
-
-    ux, uy = 50 + (x * 0.23), 50 - (y * 0.23)
-    ux, uy = max(8, min(92, ux)), max(8, min(92, uy))
+    ux, uy = max(8, min(92, 50 + (x * 0.23))), max(8, min(92, 50 - (y * 0.23)))
     
-    st.markdown(f"""
-        <div class="map-container">
-            <img src="data:image/png;base64,{img_data}" style="width:100%; height:100%;">
-            {l_html}
-            <div class="dot user-dot" style="left:{ux}%; top:{uy}%;">Tú</div>
-        </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f'<div class="map-container"><img src="data:image/png;base64,{img_data}" style="width:100%; height:100%;">{l_html}<div class="dot user-dot" style="left:{ux}%; top:{uy}%;">Tú</div></div>', unsafe_allow_html=True)
 
-    # Leyenda
-    l_items = "".join([f'<div style="display:flex; align-items:center; font-weight:bold; color:#0D47A1;"><div style="width:14px; height:14px; border-radius:50%; background:{l["c"]}; margin-right:8px;"></div>{l["n"]}</div>' for l in LEADERS])
-    st.markdown(f'<div style="background:white; padding:20px; border-radius:20px; display:flex; flex-wrap:wrap; justify-content:center; gap:20px; border:2px solid #BBDEFB;">{l_items}</div>', unsafe_allow_html=True)
-
-    if st.button("🔄 REINICIAR TEST"):
-        st.session_state.update({'idx':0, 'x':0, 'y':0, 'hist':[]})
-        st.rerun()
+    # BOTONES FINALES
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("🔄 REINICIAR"):
+            st.session_state.update({'idx':0, 'x':0, 'y':0, 'hist':[]})
+            st.rerun()
+    with col2:
+        if st.button("🖨️ IMPRIMIR / PDF"):
+            st.components.v1.html("<script>window.print();</script>", height=0)
 
 else:
     st.progress(st.session_state.idx / len(questions))
     st.markdown(f'<div class="question-text">{questions[st.session_state.idx]["t"]}</div>', unsafe_allow_html=True)
     
-    # Cada botón es una línea para asegurar centrado
     st.button("Totalmente de acuerdo", on_click=responder, args=(2,))
     st.button("De acuerdo", on_click=responder, args=(1,))
     st.button("No estoy seguro / Neutral", on_click=responder, args=(0,))
@@ -249,7 +235,7 @@ else:
     st.button("Totalmente en desacuerdo", on_click=responder, args=(-2,))
 
     if st.session_state.idx > 0:
-        if st.button("⬅️ VOLVER A LA ANTERIOR"):
+        if st.button("⬅️ VOLVER ATRÁS"):
             px, py = st.session_state.hist.pop()
             st.session_state.x -= px; st.session_state.y -= py
             st.session_state.idx -= 1
