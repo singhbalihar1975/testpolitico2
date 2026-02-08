@@ -5,29 +5,29 @@ import math
 # 1. CONFIGURACIÓN DE PÁGINA
 st.set_page_config(page_title="Compás Político", layout="centered")
 
-# 2. ESTILOS CSS (Preguntas Gigantes y Refinamiento Visual)
+# 2. ESTILOS CSS
 st.markdown("""
     <style>
-    .stApp { background-color: #F8FAFC; }
+    .stApp { background-color: #E0F2FE; }
     .main .block-container { max-width: 900px; display: flex; flex-direction: column; align-items: center; }
     
-    /* Títulos */
     .main-title { font-size: 55px; font-weight: 950; color: #1E3A8A; text-align: center; width: 100%; margin-bottom: 10px; }
-    .warning-box { background-color: #FFFBEB; border: 2px solid #F59E0B; border-radius: 15px; padding: 20px; text-align: center; color: #92400E; font-weight: 700; font-size: 18px; margin-bottom: 25px; width: 100%; }
+    .welcome-text { font-size: 20px; color: #1E40AF; text-align: center; margin-bottom: 30px; font-weight: 500; }
+    .warning-box { background-color: #FFFFFF; border: 2px solid #3B82F6; border-radius: 15px; padding: 20px; text-align: center; color: #1E40AF; font-weight: 700; font-size: 18px; margin-bottom: 25px; width: 100%; }
     
-    /* PREGUNTAS GIGANTES */
-    .question-container { margin: 60px auto; width: 100%; text-align: center; min-height: 160px; display: flex; align-items: center; justify-content: center; }
-    .question-text { font-size: 42px !important; font-weight: 800; color: #1E40AF; line-height: 1.1; letter-spacing: -1px; }
+    .q-counter { font-size: 18px; color: #1E40AF; font-weight: 800; margin-bottom: -35px; text-transform: uppercase; }
     
-    /* RESULTADOS */
-    .result-bubble { background-color: white; border-radius: 35px; padding: 50px; box-shadow: 0 20px 40px rgba(0,0,0,0.06); border: 3px solid #BFDBFE; text-align: center; margin: 30px auto; width: 100%; }
-    .ideology-title { font-size: 42px !important; font-weight: 950; color: #2563EB; margin: 0; text-transform: uppercase; }
-    .ideology-desc { font-size: 19px !important; color: #334155; margin-top: 25px; line-height: 1.7; text-align: justify; font-weight: 400; }
+    .question-container { margin: 45px auto; width: 100%; text-align: center; min-height: 130px; display: flex; align-items: center; justify-content: center; }
+    .question-text { font-size: 32px !important; font-weight: 800; color: #1E3A8A; line-height: 1.2; }
+    
+    .result-bubble { background-color: white; border-radius: 35px; padding: 40px; box-shadow: 0 15px 30px rgba(0,0,0,0.1); border: 3px solid #60A5FA; text-align: center; margin: 20px auto; width: 100%; }
+    .ideology-title { font-size: 38px !important; font-weight: 950; color: #2563EB; margin: 0; text-transform: uppercase; }
+    .ideology-desc { font-size: 18px !important; color: #334155; margin-top: 20px; line-height: 1.6; text-align: justify; font-weight: 400; }
 
-    /* BOTONES */
-    div.stButton > button { width: 100% !important; max-width: 650px !important; height: 70px !important; border-radius: 18px !important; font-size: 24px !important; background-color: #DBEAFE !important; color: #1E40AF !important; border: 1px solid #BFDBFE !important; border-bottom: 5px solid #A5C9F8 !important; margin: 12px auto !important; display: block !important; font-weight: 700; }
+    div.stButton > button { width: 100% !important; max-width: 650px !important; height: 58px !important; border-radius: 15px !important; font-size: 20px !important; background-color: #FFFFFF !important; color: #1E40AF !important; border: 2px solid #BFDBFE !important; border-bottom: 5px solid #BFDBFE !important; margin: 10px auto !important; display: block !important; font-weight: 700; transition: 0.2s; }
+    div.stButton > button:hover { background-color: #F0F9FF !important; border-color: #3B82F6 !important; }
     
-    .leader-match { background: white; border: 1px solid #E2E8F0; border-radius: 12px; padding: 15px; margin: 8px 0; display: flex; justify-content: space-between; color: #1E293B; font-weight: 700; font-size: 18px; width: 100%; max-width: 600px; }
+    .leader-match { background: white; border: 1px solid #BFDBFE; border-radius: 12px; padding: 12px; margin: 6px 0; display: flex; justify-content: space-between; color: #1E293B; font-weight: 700; font-size: 17px; width: 100%; max-width: 600px; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -58,7 +58,8 @@ LEADERS = [
     {"n": "Mujica", "x": -7, "y": -4, "c": "#48BB78"}
 ]
 
-# 4. LAS 85 PREGUNTAS
+# 4. PREGUNTAS (85 EN TOTAL)
+# Se asume que la lista completa de 85 preguntas está integrada aquí...
 questions = [
     # ECONÓMICAS
     {"t": "El gobierno no debería decir a las empresas cuánto pagar a sus empleados.", "a": "x", "v": 1},
@@ -166,35 +167,35 @@ def responder(puntos):
 # 6. DESCRIPIÓN LARGA DE IDEOLOGÍAS
 def get_long_desc(x, y):
     if y > 6:
-        if x < -6: return "Marxismo-Leninismo", "Usted aboga por una sociedad donde el Estado controla totalmente los medios de producción para eliminar las clases sociales. Cree en una disciplina revolucionaria estricta y en la planificación económica centralizada como única vía para la justicia proletaria."
-        if -6 <= x < -2: return "Nacionalbolchevismo", "Una posición inusual que combina una economía socialista radical con un nacionalismo extremo. Usted valora la soberanía nacional y la identidad tradicional tanto como la redistribución de la riqueza bajo un mando central fuerte."
-        if -2 <= x <= 2: return "Totalitarismo", "Para usted, el Estado es el eje absoluto de la existencia humana. Cree que los derechos individuales deben sacrificarse por completo en favor de la seguridad, el orden y el cumplimiento de un objetivo nacional o ideológico superior."
-        if 2 < x <= 6: return "Fascismo Clásico", "Usted defiende un Estado fuerte y corporativo que unifique a la nación por encima de las divisiones de clase. Cree en la jerarquía natural, el heroísmo y la importancia de la unidad nacional bajo una autoridad incuestionable."
-        return "Estatismo de Extrema Derecha", "Su visión se basa en una jerarquía rígida y valores tradicionales infranqueables, protegidos por un mercado que sirve a los intereses de la nación y un Estado que mantiene el orden moral y civil mediante el uso de la fuerza."
+        if x < -6: return "Marxismo-Leninismo", "Buscas una sociedad donde el Estado controle todo para eliminar las diferencias de dinero. Crees que la disciplina y el control de la economía son la única forma de conseguir justicia para los trabajadores."
+        if -6 <= x < -2: return "Nacionalbolchevismo", "Una mezcla rara: quieres una economía donde el Estado mande mucho, pero a la vez eres super nacionalista. Valoras las tradiciones de tu país tanto como el reparto de la riqueza."
+        if -2 <= x <= 2: return "Totalitarismo", "Para ti, el Estado es lo más importante que existe. Crees que las libertades personales no importan tanto como la seguridad, el orden y cumplir los objetivos del gobierno."
+        if 2 < x <= 6: return "Fascismo Clásico", "Defiendes un Estado fuerte que una a toda la nación por encima de todo. Crees en la jerarquía, el orden militar y que todo el mundo debe trabajar unido por el orgullo nacional."
+        return "Derecha Radical Autoritaria", "Tu visión se basa en mantener las tradiciones y el orden a toda costa, usando un Estado muy fuerte y un mercado que sirva sobre todo a los intereses del país."
     elif 2 < y <= 6:
-        if x < -6: return "Socialismo de Estado", "Cree que el Estado debe gestionar la mayoría de los recursos para garantizar la igualdad, limitando algunas libertades individuales para prevenir la explotación. El bienestar colectivo es su prioridad sobre la autonomía privada."
-        if -6 <= x < -2: return "Populismo de Izquierda", "Su ideología se centra en la lucha contra las élites. Defiende un Estado fuerte que proteja a los trabajadores y redistribuya la riqueza, apoyándose en la voluntad popular para transformar las estructuras económicas."
-        if -2 <= x <= 2: return "Dirigismo / Estatismo", "Usted cree que el capitalismo solo funciona si el Estado actúa como guía. Defiende la propiedad privada pero exige que el gobierno intervenga constantemente para estabilizar la economía y mantener la cohesión social."
-        if 2 < x <= 6: return "Conservadurismo", "Valora la estabilidad, la tradición y las instituciones históricas. Cree en el libre mercado pero considera que el Estado debe actuar para preservar la moral pública y la ley frente a cambios sociales radicales."
-        return "Derecha Autoritaria", "Su postura favorece un mercado muy libre y una mínima intervención económica estatal, pero exige un control social firme, fuerzas de seguridad potentes y leyes estrictas para mantener la estructura de la sociedad."
+        if x < -6: return "Socialismo de Estado", "Crees que el gobierno debe gestionar casi todo para que nadie sea pobre, aunque eso signifique perder algo de libertad individual. El bienestar de todos va antes que los negocios privados."
+        if -6 <= x < -2: return "Populismo de Izquierda", "Te centras en luchar contra los de arriba (élites). Quieres un Estado que proteja a la gente común y reparta el dinero, usando el apoyo de la mayoría para cambiar las cosas."
+        if -2 <= x <= 2: return "Estatismo", "Crees que el capitalismo solo va bien si el gobierno lo vigila de cerca. Defiendes que la gente tenga sus cosas, pero quieres que el Estado intervenga para que haya orden y equilibrio social."
+        if 2 < x <= 6: return "Conservadurismo", "Valoras la estabilidad y las tradiciones. Crees en el libre mercado, pero piensas que el Estado debe estar ahí para proteger la moral y que las cosas no cambien de forma loca de un día para otro."
+        return "Derecha Autoritaria", "Te gusta que el mercado sea muy libre y el Estado no se meta en economía, pero exiges mucha policía, fronteras fuertes y leyes estrictas para que la sociedad funcione como debe."
     elif -2 <= y <= 2:
-        if x < -6: return "Socialismo Democrático", "Busca una transformación del sistema económico hacia la propiedad común mediante procesos democráticos. Rechaza el autoritarismo pero insiste en que la economía debe servir a la humanidad y no al beneficio privado."
-        if -6 <= x < -2: return "Socialdemocracia", "Usted es el defensor del Estado del Bienestar. Cree en una economía de mercado pero con impuestos progresivos altos para financiar salud, educación y pensiones universales, buscando el equilibrio humano."
-        if -2 <= x <= 2: return "Centrismo", "Usted evita los extremos. Cree en soluciones pragmáticas que combinen la eficiencia del mercado con redes de seguridad social moderadas, protegiendo tanto las libertades civiles como el orden público."
-        if 2 < x <= 6: return "Liberalismo Moderno", "Su prioridad es la libertad individual. Defiende una economía de mercado dinámica y libertades sociales amplias, considerando que el Estado solo debe intervenir para corregir fallos evidentes o proteger derechos básicos."
-        return "Liberalismo Clásico", "Usted es heredero de la Ilustración. Cree que el mercado se regula solo y que el Estado debe limitarse a proteger la vida, la libertad y la propiedad privada, interfiriendo lo mínimo posible en la vida de los ciudadanos."
+        if x < -6: return "Socialismo Democrático", "Buscas que la economía sea de todos pero de forma democrática, sin dictaduras. Crees que el sistema debe servir a las personas y no solo para que unos pocos se forren."
+        if -6 <= x < -2: return "Socialdemocracia", "Eres el defensor del 'Estado del Bienestar'. Te parece bien que haya empresas, pero quieres impuestos altos a los ricos para pagar sanidad, educación y ayudas para todo el mundo."
+        if -2 <= x <= 2: return "Centrismo", "Pasas de los extremos. Buscas soluciones prácticas: un poco de libertad económica para que el país crezca, pero con ayudas sociales y leyes que protejan a los ciudadanos."
+        if 2 < x <= 6: return "Liberalismo Moderno", "Tu prioridad es que cada uno haga lo que quiera. Defiendes un mercado con mucha chispa y libertades sociales a tope, dejando que el Estado solo se meta si algo va muy mal."
+        return "Liberalismo Clásico", "Crees que el mercado se arregla solo y que el Estado debería ser mini. Lo más importante para ti es proteger la vida, la libertad y que nadie te toque lo que es tuyo."
     elif -6 < y <= -2:
-        if x < -6: return "Anarcosindicalismo", "Su visión es una sociedad organizada a través de sindicatos y federaciones de trabajadores. Cree en la abolición del Estado pero insiste en la propiedad colectiva voluntaria para evitar nuevas formas de jerarquía."
-        if -6 <= x < -2: return "Socialismo Libertario", "Combina un profundo deseo de igualdad económica con un rechazo visceral a la autoridad. Cree en comunidades autogestionadas donde los recursos se comparten libremente sin necesidad de un gobierno central."
-        if -2 <= x <= 2: return "Libertarismo Progresista", "Usted quiere libertad total en lo social (legalización, autonomía corporal) pero acepta que el Estado mantenga una pequeña red de seguridad o servicios comunes para garantizar la igualdad de oportunidades inicial."
-        if 2 < x <= 6: return "Minarquismo", "Usted cree en un 'Estado Vigilante Nocturno'. El gobierno debe existir únicamente para proteger a los individuos de la agresión y el fraude; cualquier otra función estatal se considera una violación de la libertad."
-        return "Paleolibertarismo", "Combina una economía de mercado radicalmente libre con valores culturales tradicionales. Usted cree que el Estado debe desaparecer, pero que la sociedad debe guiarse por normas morales naturales o religiosas."
+        if x < -6: return "Anarcosindicalismo", "Te gustaría una sociedad organizada por los propios trabajadores en sindicatos. No quieres jefes ni políticos, solo gente cooperando de forma libre y colectiva."
+        if -6 <= x < -2: return "Socialismo Libertario", "Quieres igualdad económica pero odias que alguien te mande. Crees en comunidades donde la gente comparta lo que tiene voluntariamente, sin necesidad de un gobierno central."
+        if -2 <= x <= 2: return "Libertarismo Progresista", "Quieres libertad total en temas sociales (aborto, drogas, derechos) pero aceptas que el Estado mantenga algunas ayudas básicas para que todo el mundo tenga una oportunidad al empezar."
+        if 2 < x <= 6: return "Minarquismo", "Crees que el Estado solo debe existir para la policía y la justicia. Cualquier otra cosa que haga el gobierno te parece que es meterse donde no le llaman y quitarte libertad."
+        return "Paleolibertarismo", "Quieres un mercado libre a tope y sin Estado, pero en lo personal te gustan los valores tradicionales. Crees que la libertad económica es la clave, pero que la moral es importante para que la sociedad no se hunda."
     else:
-        if x < -6: return "Anarcocomunismo", "Usted sueña con la abolición total del Estado, el dinero y la propiedad privada. Cree en una sociedad de abundancia basada en el lema 'de cada cual según su capacidad, a cada cual según su necesidad'."
-        if -6 <= x < -2: return "Mutualismo", "Propone un sistema de mercado sin Estado basado en el intercambio recíproco. Cree que la propiedad solo es legítima mientras se use, y aboga por cooperativas y bancos de crédito gratuito."
-        if -2 <= x <= 2: return "Anarquismo Individualista", "Para usted, el individuo es la unidad suprema. Rechaza cualquier contrato o institución que limite su voluntad, defendiendo una autonomía radical donde nadie tenga poder sobre nadie."
-        if 2 < x <= 6: return "Voluntarismo", "Usted cree que toda interacción humana debe ser estrictamente voluntaria. Rechaza el Estado por ser intrínsecamente coercitivo y defiende la libertad de asociación como el pilar fundamental de la civilización."
-        return "Anarcocapitalismo", "Usted cree que el Estado es un robo. Defiende la privatización de absolutamente todo, desde las carreteras hasta la justicia, confiando en que el derecho de propiedad y el mercado libre generen un orden natural óptimo."
+        if x < -6: return "Anarcocomunismo", "Sueñas con un mundo sin Estado, sin dinero y sin propiedad privada. Crees que todo debería ser de todos y que cada uno aporte lo que pueda y reciba lo que necesite."
+        if -6 <= x < -2: return "Mutualismo", "Propones un mercado libre de verdad, sin Estado ni bancos centrales. Crees en cooperativas donde la gente se ayude mutuamente y el intercambio sea justo para todos."
+        if -2 <= x <= 2: return "Anarquismo Individualista", "Para ti lo más importante eres TÚ. Pasas de cualquier institución que te diga qué hacer. Defiendes una autonomía total donde nadie tenga poder sobre nadie más."
+        if 2 < x <= 6: return "Voluntarismo", "Crees que todas las relaciones humanas deben ser porque ambas partes quieran. Odias al Estado porque te obliga a hacer cosas, y defiendes que la libertad de elegir es la base de todo."
+        return "Anarcocapitalismo", "Crees que el Estado es un robo. Quieres que todo se privatice (carreteras, justicia, seguridad...) y confías en que el mercado libre sea el que organice el mundo de forma perfecta."
 
 # --- PANTALLA RESULTADOS ---
 if st.session_state.idx >= len(questions):
@@ -204,7 +205,7 @@ if st.session_state.idx >= len(questions):
     
     st.markdown(f'<div class="result-bubble"><p class="ideology-title">{id_nom}</p><p class="ideology-desc">{id_desc}</p></div>', unsafe_allow_html=True)
 
-    # GRÁFICO (Refinado)
+    # Gráfico del Compás
     leaders_html = "".join([f"""
         <div style="position:absolute; width:10px; height:10px; background:{l['c']}; border-radius:50%; left:{50 + (l['x']*4.6)}%; top:{50 - (l['y']*4.6)}%; transform:translate(-50%,-50%); border:1px solid black; z-index:5;"></div>
         <div style="position:absolute; font-size:11px; font-weight:900; left:{50 + (l['x']*4.6)}%; top:{50 - (l['y']*4.6)}%; transform:translate(-50%, 8px); color:#1E293B; z-index:6; white-space:nowrap; text-shadow: 1px 1px white;">{l['n']}</div>
@@ -212,10 +213,10 @@ if st.session_state.idx >= len(questions):
 
     compass_code = f"""
     <div style="position:relative; width:650px; height:650px; margin:20px auto; background:white; border:4px solid #1e293b; overflow:hidden; border-radius:15px; font-family: sans-serif;">
-        <div style="position:absolute; width:50%; height:50%; top:0; left:0; background:rgba(239,68,68,0.25);"></div>
-        <div style="position:absolute; width:50%; height:50%; top:0; right:0; background:rgba(59,130,246,0.25);"></div>
-        <div style="position:absolute; width:50%; height:50%; bottom:0; left:0; background:rgba(34,197,94,0.25);"></div>
-        <div style="position:absolute; width:50%; height:50%; bottom:0; right:0; background:rgba(234,179,8,0.25);"></div>
+        <div style="position:absolute; width:50%; height:50%; top:0; left:0; background:rgba(239,68,68,0.2);"></div>
+        <div style="position:absolute; width:50%; height:50%; top:0; right:0; background:rgba(59,130,246,0.2);"></div>
+        <div style="position:absolute; width:50%; height:50%; bottom:0; left:0; background:rgba(34,197,94,0.2);"></div>
+        <div style="position:absolute; width:50%; height:50%; bottom:0; right:0; background:rgba(234,179,8,0.2);"></div>
         <div style="position:absolute; width:100%; height:3px; background:#1e293b; top:50%;"></div>
         <div style="position:absolute; width:3px; height:100%; background:#1e293b; left:50%;"></div>
         {leaders_html}
@@ -225,22 +226,29 @@ if st.session_state.idx >= len(questions):
     """
     components.html(compass_code, height=680)
 
-    # AFINIDAD
-    st.markdown("<h2 style='text-align:center;'>Afinidad con Líderes</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align:center; color:#1E3A8A;'>¿A quién te pareces más?</h2>", unsafe_allow_html=True)
     for l in LEADERS: l['match'] = max(0, 100 - (math.sqrt((x-l['x'])**2 + (y-l['y'])**2) * 5.5))
     for l in sorted(LEADERS, key=lambda k: k['match'], reverse=True)[:3]:
         st.markdown(f'<div class="leader-match"><span>{l["n"]}</span><span>{l["match"]:.1f}%</span></div>', unsafe_allow_html=True)
 
-    if st.button("🖨️ GUARDAR RESULTADOS"): components.html("<script>window.print();</script>", height=0)
-    if st.button("🔄 REINICIAR"): st.session_state.update({'idx': 0, 'x': 0.0, 'y': 0.0, 'hist': []}); st.rerun()
+    # BOTONES FINALES
+    if st.button("🖨️ GUARDAR / IMPRIMIR RESULTADOS"):
+        components.html("<script>window.print();</script>", height=0)
+    if st.button("🔄 VOLVER A EMPEZAR"):
+        st.session_state.update({'idx': 0, 'x': 0.0, 'y': 0.0, 'hist': []})
+        st.rerun()
 
 # --- PANTALLA PREGUNTAS ---
 else:
     st.markdown('<h1 class="main-title">Compás Político</h1>', unsafe_allow_html=True)
-    if st.session_state.idx == 0:
-        st.markdown('<div class="warning-box">Responda con total sinceridad. La opción "Neutral" es válida pero menos precisa.</div>', unsafe_allow_html=True)
     
-    st.progress(st.session_state.idx / len(questions))
+    if st.session_state.idx == 0:
+        st.markdown('<p class="welcome-text">¡Hola! Descubre cuál es tu verdadera ideología política con este test de 85 preguntas. No hay respuestas correctas o incorrectas, solo tu opinión.</p>', unsafe_allow_html=True)
+        st.markdown('<div class="warning-box">Responde lo que pienses de verdad. Si no entiendes alguna pregunta, usa el botón "Neutral".</div>', unsafe_allow_html=True)
+    
+    st.markdown(f'<p class="q-counter">Pregunta {st.session_state.idx + 1} de 85</p>', unsafe_allow_html=True)
+    st.progress(st.session_state.idx / 85)
+    
     st.markdown(f'<div class="question-container"><span class="question-text">{questions[st.session_state.idx]["t"]}</span></div>', unsafe_allow_html=True)
     
     st.button("✅ Totalmente de acuerdo", on_click=responder, args=(2,))
@@ -250,7 +258,7 @@ else:
     st.button("❌ Totalmente en desacuerdo", on_click=responder, args=(-2,))
 
     if st.session_state.idx > 0:
-        if st.button("⬅️ PREGUNTA ANTERIOR"):
+        if st.button("⬅️ VOLVER A LA ANTERIOR"):
             px, py = st.session_state.hist.pop()
             st.session_state.x -= px; st.session_state.y -= py
             st.session_state.idx -= 1; st.rerun()
